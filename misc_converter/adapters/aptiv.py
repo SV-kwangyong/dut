@@ -13,7 +13,15 @@ from misc_converter.adapters.base import Adapter, OptionSpec
 from misc_converter.backends.base import Backend
 from misc_converter.engine.models import WorkItem
 
-INPUT_EXTENSIONS = {".dvl", ".dvs", ".dvss", ".dvsu", ".mudp", ".asc", ".mf4"}
+# 입력 포맷 선택값 → 확장자. 기본 dvl(실사용 주 경로). "any"는 전부.
+INPUT_FORMATS: dict[str, tuple[str, ...]] = {
+    "dvl": (".dvl",),
+    "dvs": (".dvs", ".dvss", ".dvsu"),
+    "mudp": (".mudp",),
+    "asc": (".asc",),
+    "mf4": (".mf4",),
+}
+INPUT_EXTENSIONS = {ext for exts in INPUT_FORMATS.values() for ext in exts}
 
 # 라이터 플래그 → 기대 출력 확장자. None = 문서·바이너리에서 확인 불가(실측 전) → verify가 stem.* 신규 파일로 판단
 WRITERS: dict[str, str | None] = {
@@ -45,6 +53,9 @@ class AptivAdapter(Adapter):
     tool_key = "aptiv"
     backend_kind = "wine"
     options = [
+        OptionSpec(
+            "input", "choice", "dvl", (*INPUT_FORMATS.keys(), "any"), "입력 포맷 필터(트리 스캔 시 이 확장자만)"
+        ),
         OptionSpec("asc", "flag", False, help="ASC 내보내기 (CAN 텍스트 트레이스, 주력 경로)"),
         OptionSpec("ascbase", "choice", "hex", ("hex", "dec"), "ASC 숫자 표기"),
         OptionSpec("asctimeref", "choice", "absolute", ("absolute", "relative"), "ASC 타임스탬프 기준"),
@@ -75,8 +86,12 @@ class AptivAdapter(Adapter):
         OptionSpec("adtf", "flag", False, help="ADTF 내보내기"),
     ]
 
-    def match(self, path: Path) -> bool:
-        return path.is_file() and path.suffix.lower() in INPUT_EXTENSIONS
+    def match(self, path: Path, opts: dict[str, Any]) -> bool:
+        if not path.is_file():
+            return False
+        fmt = str(opts.get("input") or "dvl")
+        allowed = INPUT_EXTENSIONS if fmt == "any" else set(INPUT_FORMATS.get(fmt, ()))
+        return path.suffix.lower() in allowed
 
     def enabled_writers(self, opts: dict[str, Any]) -> list[str]:
         return [w for w in WRITERS if opts.get(w)]

@@ -45,7 +45,7 @@ class Adapter(ABC):
 
     # ── 스캔 ─────────────────────────────────────────────────────────
     @abstractmethod
-    def match(self, path: Path) -> bool:
+    def match(self, path: Path, opts: dict[str, Any]) -> bool:
         """이 경로가 변환 입력 후보인가. unit=file이면 파일, session_parent면 세션 디렉터리."""
 
     # ── 실행 ─────────────────────────────────────────────────────────

@@ -21,13 +21,23 @@ def item(tmp_path):
 
 
 def test_match_input_extensions(tmp_path, adapter):
+    any_opts = adapter.merge_options({"input": "any"})
     for name in ["a.dvl", "b.DVL", "c.dvs", "d.dvsu", "e.mudp", "f.asc", "g.mf4"]:
         p = tmp_path / name
         p.write_bytes(b"x")
-        assert adapter.match(p), name
+        assert adapter.match(p, any_opts), name
     (tmp_path / "h.txt").write_bytes(b"x")
-    assert not adapter.match(tmp_path / "h.txt")
-    assert not adapter.match(tmp_path)  # 디렉터리
+    assert not adapter.match(tmp_path / "h.txt", any_opts)
+    assert not adapter.match(tmp_path, any_opts)  # 디렉터리
+
+
+def test_match_default_input_filter_is_dvl(tmp_path, adapter):
+    opts = adapter.merge_options({})
+    (tmp_path / "a.dvl").write_bytes(b"x")
+    (tmp_path / "f.asc").write_bytes(b"x")
+    assert adapter.match(tmp_path / "a.dvl", opts)
+    assert not adapter.match(tmp_path / "f.asc", opts)
+    assert adapter.match(tmp_path / "f.asc", adapter.merge_options({"input": "asc"}))
 
 
 def test_build_argv_asc_defaults(adapter, item):

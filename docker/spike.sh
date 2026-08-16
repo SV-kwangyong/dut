@@ -15,7 +15,7 @@ export WINEPREFIX=${WINEPREFIX:-/opt/wineprefix} WINEDEBUG=-all
 declare -A R
 
 step() { echo; echo "═══ $1"; }
-winpath() { echo "Z:${1//\//\}"; }
+winpath() { printf 'Z:%s\n' "$1" | tr '/' '\\'; }
 
 step "0. wineprefix 초기화 (최초 1회 수 분)"
 if [ ! -f "$WINEPREFIX/system.reg" ]; then wineboot -u >/dev/null 2>&1; fi

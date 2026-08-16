@@ -1,0 +1,59 @@
+[project]
+name = "misc_converter"
+version = "0.1.0"
+description = "MF4 외 기타 인바운드 포맷(AVI·dvl·mudp·asc·txt·pcap) 변환 오케스트레이터 — 웹 서비스 + CLI"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+web = ["fastapi>=0.115", "uvicorn>=0.30"]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.9", "mypy>=1.13", "pre-commit>=3"]
+
+[project.scripts]
+misc-converter = "misc_converter.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["misc_converter", "misc_converter.engine", "misc_converter.adapters", "misc_converter.backends", "misc_converter.web"]
+
+[tool.setuptools.package-data]
+"misc_converter.web" = ["index.html"]
+
+# ────────────────────────────────────────────────
+# ruff (헌법 §V·§VIII — dut 루트 설정과 동일 기준)
+# ────────────────────────────────────────────────
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = [".venv", "venv", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+extend-ignore = ["E501"]
+
+# ────────────────────────────────────────────────
+# mypy (헌법 §VI)
+# ────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+# ────────────────────────────────────────────────
+# pytest (헌법 §IX)
+# ────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = ["-v", "--strict-markers"]
+markers = ["slow: 실제 도구·샘플 데이터가 있을 때만 실행하는 스모크 테스트"]

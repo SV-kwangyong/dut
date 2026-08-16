@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# misc_converter 로컬 설정·운영 산출물
+config.json
+logs/
+*.db

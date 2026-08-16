@@ -1,0 +1,19 @@
+{
+  "mounts": {
+    "qumulo": {"linux": "/mnt/qumulo", "windows": "\\qumulo.stradvision.com\datagroup"}
+  },
+  "tools": {
+    "aptiv": "/opt/tools/AptivFileConversion_v2.1.5/AptivFileConversion.exe",
+    "djlp": "/opt/tools/DJLPConvertTool/DJLPConvertTool_update7.exe",
+    "csv_extractor": "/opt/tools/txt_to_csv/csv_extractor-3.10.0",
+    "pcap2pcd_image": "surf_pcap2pcd_converter:latest"
+  },
+  "wine": {"bin": "wine", "prefix": "/opt/wineprefix", "xvfb": true},
+  "docker": {"bin": "docker", "volumes": ["/mnt/qumulo:/mnt/qumulo"]},
+  "djlp_argv_template": ["{exe}", "{input}"],
+  "workers": 4,
+  "retries": 2,
+  "timeout_s": 1800,
+  "log_dir": "logs",
+  "web_port": 8768
+}

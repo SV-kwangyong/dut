@@ -66,6 +66,21 @@ th{color:var(--text-muted);font-weight:600}td.mono{font-family:var(--mono);font-
 .help{color:var(--text-dim);font-size:11.5px;margin-top:2px}
 .browse{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;max-height:220px;overflow:auto;margin-top:6px}
 .browse div{padding:2px 4px;cursor:pointer;border-radius:3px}.browse div:hover{background:var(--purple-dim)}
+.step{font-size:12px;font-weight:700;color:var(--purple-light);letter-spacing:.04em;margin:16px 0 6px}
+.step:first-child{margin-top:0}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;background:var(--surface2)}
+.card:hover{border-color:var(--border2)}.card.sel{border-color:var(--purple-light);background:var(--purple-dim)}
+.card b{display:block;font-size:13.5px;margin-bottom:3px}.card span{font-size:11.5px;color:var(--text-muted);line-height:1.35;display:block}
+.hint{font-size:12px;color:var(--text-muted);background:var(--surface3);border-radius:6px;padding:7px 10px;margin-top:6px;line-height:1.4}
+details.adv{margin-top:14px;border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+details.adv summary{cursor:pointer;color:var(--text-muted);font-size:13px}
+.optgroup{border-left:2px solid var(--border2);margin:4px 0 8px 8px;padding-left:12px}
+.preview{margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--surface3);font-size:13px}
+.preview b{font-size:16px}
+.preview ul{margin:6px 0 0 16px;font-family:var(--mono);font-size:11.5px;color:var(--text-muted)}
+.actions{display:flex;gap:8px;margin-top:14px;align-items:center}
+.empty{color:var(--text-muted);font-size:13px;line-height:1.6;padding:8px}
 </style>
 </head>
 <body>
@@ -82,46 +97,80 @@ const STATUS_KO = {queued:'대기', running:'실행 중', done:'완료', failed:
 
 function OptionField({spec, value, onChange}) {
   const v = value === undefined ? spec.default : value;
+  const tag = <span style={{fontFamily:'var(--mono)',color:'var(--text-dim)',fontSize:11}}>{spec.name}</span>;
   if (spec.kind === 'flag') return (
     <label className="chk"><input type="checkbox" checked={!!v} onChange={e=>onChange(e.target.checked)} />
-      <span>{spec.name}<span className="help" style={{display:'inline',marginLeft:8}}>{spec.help}</span></span></label>);
-  if (spec.kind === 'choice') return (<div><label>{spec.name}</label>
-    <select value={v ?? ''} onChange={e=>onChange(e.target.value)}>{spec.choices.map(c=><option key={c} value={c}>{c}</option>)}</select>
-    <div className="help">{spec.help}</div></div>);
-  return (<div><label>{spec.name}</label>
+      <span>{spec.help || spec.name} {tag}</span></label>);
+  if (spec.kind === 'choice') return (<div><label>{spec.help || spec.name} {tag}</label>
+    <select value={v ?? ''} onChange={e=>onChange(e.target.value)}>{spec.choices.map(c=><option key={c} value={c}>{c}</option>)}</select></div>);
+  return (<div><label>{spec.help || spec.name} {tag}</label>
     <input type={spec.kind==='int'?'number':'text'} value={v ?? ''} placeholder={spec.default ?? ''}
-      onChange={e=>onChange(spec.kind==='int' ? (e.target.value===''?null:Number(e.target.value)) : e.target.value)} />
-    <div className="help">{spec.help}</div></div>);
+      onChange={e=>onChange(spec.kind==='int' ? (e.target.value===''?null:Number(e.target.value)) : e.target.value)} /></div>);
 }
 
-function SubmitPanel({adapters, meta, onSubmitted}) {
-  const [name, setName] = useState('aptiv');
+/* 어댑터 옵션을 group 단위로 렌더: group의 flag가 켜졌을 때만 부속 옵션 노출 */
+function AdvancedOptions({adapter, opts, setOpt}) {
+  if (!adapter) return null;
+  const ungrouped = adapter.options.filter(o=>!o.group);
+  const groups = [...new Set(adapter.options.filter(o=>o.group).map(o=>o.group))];
+  const val = (o) => opts[o.name] === undefined ? o.default : opts[o.name];
+  return (<div>
+    <div className="grid2">{ungrouped.map(o=><OptionField key={o.name} spec={o} value={opts[o.name]} onChange={v=>setOpt(o.name,v)} />)}</div>
+    {groups.map(g=>{
+      const members = adapter.options.filter(o=>o.group===g);
+      const flag = members.find(o=>o.kind==='flag');
+      const subs = members.filter(o=>o!==flag);
+      const on = flag ? !!val(flag) : true;
+      return (<div key={g}>
+        {flag && <OptionField spec={flag} value={opts[flag.name]} onChange={v=>setOpt(flag.name,v)} />}
+        {on && subs.length>0 && <div className="optgroup grid2">{subs.map(o=><OptionField key={o.name} spec={o} value={opts[o.name]} onChange={v=>setOpt(o.name,v)} />)}</div>}
+      </div>);
+    })}
+  </div>);
+}
+
+function SubmitPanel({adapters, presets, meta, onSubmitted}) {
+  const [presetId, setPresetId] = useState('dvl2asc');
   const [inputs, setInputs] = useState('');
   const [outputDir, setOutputDir] = useState('');
   const [opts, setOpts] = useState({});
-  const [flags, setFlags] = useState({dry_run:false, force:false, workers:'', retries:''});
-  const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  const [flags, setFlags] = useState({force:false, workers:'', retries:''});
+  const [busy, setBusy] = useState(''); const [err, setErr] = useState('');
   const [browsePath, setBrowsePath] = useState(''); const [listing, setListing] = useState(null);
-  const ad = adapters.find(a=>a.name===name);
-  useEffect(()=>{ setOpts({}); }, [name]);
+  const [preview, setPreview] = useState(null);
+  const preset = presets.find(p=>p.id===presetId) || presets[0];
+  const adapter = preset && adapters.find(a=>a.name===preset.adapter);
+  useEffect(()=>{ if (preset) { setOpts({...preset.options}); setPreview(null); } }, [presetId, presets.length]);
+  useEffect(()=>{ setPreview(null); }, [inputs, outputDir, flags.force]);
+  const setOpt = (k,v)=>{ setOpts(o=>({...o,[k]:v})); setPreview(null); };
   const browse = async (p) => { try { const j = await api('/api/browse?path='+encodeURIComponent(p)); setListing(j); setBrowsePath(j.path); setErr(''); } catch(e){ setErr(e.message); } };
-  const submit = async () => {
-    setBusy(true); setErr('');
-    try {
-      const body = {adapter:name, inputs: inputs.split(/\r?\n/).map(s=>s.trim()).filter(Boolean), options: opts,
-        output_dir: outputDir||null, force: flags.force, dry_run: flags.dry_run,
-        workers: flags.workers===''?null:Number(flags.workers), retries: flags.retries===''?null:Number(flags.retries)};
-      const j = await api('/api/jobs', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-      onSubmitted(j.id);
-    } catch(e){ setErr(e.message); } finally { setBusy(false); }
+  const body = () => ({adapter: preset.adapter, inputs: inputs.split(/\r?\n/).map(s=>s.trim()).filter(Boolean), options: opts,
+        output_dir: outputDir||null, force: flags.force, dry_run: false,
+        workers: flags.workers===''?null:Number(flags.workers), retries: flags.retries===''?null:Number(flags.retries)});
+  const post = (path) => api(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body())});
+  const doPreview = async () => {
+    setBusy('preview'); setErr('');
+    try { setPreview(await post('/api/preview')); } catch(e){ setErr(e.message); } finally { setBusy(''); }
   };
+  const submit = async () => {
+    setBusy('submit'); setErr('');
+    try { const j = await post('/api/jobs'); onSubmitted(j.id); setPreview(null); } catch(e){ setErr(e.message); } finally { setBusy(''); }
+  };
+  const canPreview = !!inputs.trim() && !busy;
+  const placeholder = 'Windows 탐색기 주소를 그대로 붙여 넣으세요 (한 줄에 하나)\n\\\\qumulo.stradvision.com\\datagroup\\datateam3\\Repository\\01_raw_data\\...\n또는 /mnt/qumulo/datateam3/...';
   return (<div className="panel">
-    <div className="panel-h">변환 잡 제출 <span className="muted">{ad?.description}</span></div>
+    <div className="panel-h">변환 잡 제출</div>
     <div className="panel-b">
-      <label>입력 경로 (한 줄에 하나 — UNC·/mnt 경로 모두 가능, 디렉터리면 하위 전체 스캔)</label>
-      <textarea value={inputs} onChange={e=>setInputs(e.target.value)} placeholder={'\\\\qumulo.stradvision.com\\datagroup\\datateam3\\Repository\\01_raw_data\\...\n/mnt/qumulo/datateam3/...'} />
+      <div className="step">1. 무엇을 변환할까요?</div>
+      <div className="cards">
+        {presets.map(p=><div key={p.id} className={'card'+(p.id===presetId?' sel':'')} onClick={()=>setPresetId(p.id)}><b>{p.title}</b><span>{p.desc}</span></div>)}
+      </div>
+
+      <div className="step">2. 입력 경로</div>
+      <textarea value={inputs} onChange={e=>setInputs(e.target.value)} placeholder={placeholder} />
+      {preset && <div className="hint">📌 {preset.input_hint}</div>}
       <div className="row" style={{marginTop:6}}>
-        <input type="text" value={browsePath} onChange={e=>setBrowsePath(e.target.value)} placeholder="탐색할 경로" />
+        <input type="text" value={browsePath} onChange={e=>setBrowsePath(e.target.value)} placeholder="서버에서 폴더 찾아보기 (선택)" />
         <button className="btn ghost" style={{flex:'0 0 auto'}} onClick={()=>browse(browsePath || (meta.mounts?.[0]||''))}>탐색</button>
       </div>
       {listing && <div className="browse">
@@ -130,21 +179,31 @@ function SubmitPanel({adapters, meta, onSubmitted}) {
         {listing.files.slice(0,50).map(f=><div key={f} style={{color:'var(--text-dim)'}}>· {f}</div>)}
         <div style={{marginTop:6}}><button className="btn ghost" onClick={()=>setInputs(v=>(v?v+'\n':'')+listing.path)}>이 폴더를 입력에 추가</button></div>
       </div>}
-      <label>출력 디렉터리 (비우면 원본 옆)</label>
-      <input type="text" value={outputDir} onChange={e=>setOutputDir(e.target.value)} />
-      <label style={{marginTop:14}}>어댑터</label>
-      <select value={name} onChange={e=>setName(e.target.value)}>{adapters.map(a=><option key={a.name} value={a.name}>{a.name} — {a.description}</option>)}</select>
-      <div className="grid2" style={{marginTop:6}}>
-        {ad?.options.map(s=><OptionField key={s.name} spec={s} value={opts[s.name]} onChange={v=>setOpts(o=>({...o,[s.name]:v}))} />)}
+
+      <details className="adv">
+        <summary>고급 설정 — 출력 위치 · 어댑터 옵션 · 병렬/재시도 {adapter && <span style={{color:'var(--text-dim)'}}>({adapter.name})</span>}</summary>
+        <label>출력 디렉터리 (비우면 원본 옆 — 권장)</label>
+        <input type="text" value={outputDir} onChange={e=>setOutputDir(e.target.value)} />
+        <div style={{marginTop:10}}><AdvancedOptions adapter={adapter} opts={opts} setOpt={setOpt} /></div>
+        <div className="row" style={{marginTop:12}}>
+          <div><label>동시 처리 수 (workers)</label><input type="number" value={flags.workers} onChange={e=>setFlags(f=>({...f,workers:e.target.value}))} placeholder="설정 기본" /></div>
+          <div><label>재시도 횟수 (retries)</label><input type="number" value={flags.retries} onChange={e=>setFlags(f=>({...f,retries:e.target.value}))} placeholder="설정 기본" /></div>
+        </div>
+        <label className="chk"><input type="checkbox" checked={flags.force} onChange={e=>setFlags(f=>({...f,force:e.target.checked}))} /> 이미 변환된 것도 다시 변환 (force)</label>
+      </details>
+
+      <div className="step">3. 확인 후 실행</div>
+      {err && <div className="err">{err}</div>}
+      {preview && <div className="preview">
+        대상 <b>{preview.total}</b>건 중 변환 예정 <b style={{color:'var(--green)'}}>{preview.todo}</b>건, 이미 완료되어 건너뜀 <b>{preview.skipped}</b>건
+        {preview.todo===0 && <div className="muted" style={{marginTop:4}}>변환할 파일이 없습니다. 경로·입력 포맷을 확인하거나 force를 켜세요.</div>}
+        {preview.sample_todo.length>0 && <ul>{preview.sample_todo.map(x=><li key={x}>{x}</li>)}{preview.todo>preview.sample_todo.length && <li>… 외 {preview.todo-preview.sample_todo.length}건</li>}</ul>}
+      </div>}
+      <div className="actions">
+        <button className="btn ghost" style={{padding:'9px 14px',fontSize:14}} disabled={!canPreview} onClick={doPreview}>{busy==='preview'?'스캔 중…':'미리보기 (실행 안 함)'}</button>
+        <button className="btn" disabled={!preview || preview.todo===0 || !!busy} onClick={submit}>{busy==='submit'?'제출 중…':`변환 시작${preview?` (${preview.todo}건)`:''}`}</button>
+        {!preview && <span className="muted">먼저 미리보기로 범위를 확인하세요.</span>}
       </div>
-      <div className="row" style={{marginTop:12}}>
-        <div><label>workers</label><input type="number" value={flags.workers} onChange={e=>setFlags(f=>({...f,workers:e.target.value}))} placeholder="설정 기본" /></div>
-        <div><label>retries</label><input type="number" value={flags.retries} onChange={e=>setFlags(f=>({...f,retries:e.target.value}))} placeholder="설정 기본" /></div>
-      </div>
-      <label className="chk"><input type="checkbox" checked={flags.dry_run} onChange={e=>setFlags(f=>({...f,dry_run:e.target.checked}))} /> dry-run (실행 없이 계획만)</label>
-      <label className="chk"><input type="checkbox" checked={flags.force} onChange={e=>setFlags(f=>({...f,force:e.target.checked}))} /> force (기존 산출물 무시하고 재변환)</label>
-      {err && <div className="err" style={{marginTop:8}}>{err}</div>}
-      <div style={{marginTop:14}}><button className="btn" disabled={busy || !inputs.trim()} onClick={submit}>{busy?'제출 중…':'변환 시작'}</button></div>
     </div>
   </div>);
 }
@@ -174,30 +233,30 @@ function JobDetail({job, onCancel}) {
 }
 
 function App() {
-  const [adapters, setAdapters] = useState([]); const [meta, setMeta] = useState({});
+  const [adapters, setAdapters] = useState([]); const [presets, setPresets] = useState([]); const [meta, setMeta] = useState({});
   const [jobs, setJobs] = useState([]); const [sel, setSel] = useState(null); const [detail, setDetail] = useState(null);
   const refresh = useCallback(async ()=>{ try{ setJobs(await api('/api/jobs?limit=60')); if (sel) setDetail(await api('/api/jobs/'+sel)); }catch(e){} }, [sel]);
-  useEffect(()=>{ api('/api/adapters').then(setAdapters); api('/api/meta').then(setMeta); }, []);
+  useEffect(()=>{ api('/api/adapters').then(setAdapters); api('/api/presets').then(setPresets); api('/api/meta').then(setMeta); }, []);
   useEffect(()=>{ refresh(); const t=setInterval(refresh, 3000); return ()=>clearInterval(t); }, [refresh]);
   const cancel = async (id) => { await api('/api/jobs/'+id+'/cancel',{method:'POST'}); refresh(); };
   const running = jobs.filter(j=>j.status==='running'||j.status==='queued').length;
   return (<>
     <div className="sidebar">
       <div className="logo"><b>misc_converter</b><small>v{meta.version||'…'} · 기타 포맷 변환</small></div>
-      <div className="nav-label">어댑터</div>
-      {adapters.map(a=><div key={a.name} className="nav"><span>{a.name}</span><small>{a.description}</small></div>)}
+      <div className="nav-label">지원 변환</div>
+      {presets.map(p=><div key={p.id} className="nav"><span>{p.title}</span><small>{p.adapter}</small></div>)}
       <div className="nav-label">마운트</div>
       {(meta.mounts||[]).map(m=><div key={m} className="nav" style={{fontFamily:'var(--mono)',fontSize:12}}>{m}</div>)}
     </div>
     <div className="main">
       <div className="topbar"><h1>기타 인바운드 포맷 변환</h1><span className={'badge '+(running?'b-running':'b-done')}>{running?`큐 ${running}건`:'대기 없음'}</span></div>
       <div className="content">
-        <SubmitPanel adapters={adapters} meta={meta} onSubmitted={id=>{setSel(id); refresh();}} />
+        <SubmitPanel adapters={adapters} presets={presets} meta={meta} onSubmitted={id=>{setSel(id); refresh();}} />
         <div className="panel">
           <div className="panel-h">잡 큐 · 이력 <button className="btn ghost" onClick={refresh}>새로고침</button></div>
           <div className="panel-b" style={{display:'grid',gridTemplateColumns:'260px 1fr',gap:14,minHeight:0}}>
             <div style={{overflow:'auto'}}>
-              {jobs.length===0 && <div className="muted">아직 잡이 없습니다.</div>}
+              {jobs.length===0 && <div className="empty">아직 잡이 없습니다.<br/>왼쪽에서 작업을 고르고 경로를 붙여 넣은 뒤 <b>미리보기 → 변환 시작</b>.<br/>완료된 파일은 자동으로 건너뛰므로 중단돼도 그냥 다시 제출하면 됩니다.</div>}
               {jobs.map(j=><div key={j.id} className={'job'+(sel===j.id?' sel':'')} onClick={()=>setSel(j.id)}>
                 <div className="job-t"><b>{j.adapter}</b><span className={'badge b-'+j.status}>{STATUS_KO[j.status]||j.status}</span></div>
                 <div className="job-p">{j.inputs[0]}{j.inputs.length>1?` 외 ${j.inputs.length-1}`:''}</div>
@@ -205,7 +264,7 @@ function App() {
                 {(j.status==='running') && <div className="help">{j.progress_done}/{j.progress_total}</div>}
               </div>)}
             </div>
-            <div style={{overflow:'auto'}}><JobDetail job={detail} onCancel={cancel} /></div>
+            <div style={{overflow:'auto'}}>{detail ? <JobDetail job={detail} onCancel={cancel} /> : <div className="empty">잡을 클릭하면 진행률·변환/스킵/실패 목록·실패 사유·로그 위치가 여기 표시됩니다.</div>}</div>
           </div>
         </div>
       </div>

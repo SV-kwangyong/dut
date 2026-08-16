@@ -28,6 +28,7 @@ from misc_converter.adapters import ADAPTERS
 from misc_converter.config import Config, load_config
 from misc_converter.engine.models import ItemResult
 from misc_converter.engine.orchestrator import run_job
+from misc_converter.engine.scanner import scan
 from misc_converter.paths import PathMapper
 from misc_converter.runtime import build_runtime
 from misc_converter.web.jobs_db import JobsDB
@@ -119,6 +120,54 @@ def rt_opts(job: dict[str, Any]) -> dict[str, Any]:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# 프리셋 — 사용자는 "무슨 작업"만 고른다. 어댑터·옵션은 프리셋이 채우고 고급 설정에서만 노출.
+# ══════════════════════════════════════════════════════════════════════════════
+
+PRESETS: list[dict[str, Any]] = [
+    {
+        "id": "dvl2asc",
+        "title": "CAN 로그: .dvl → .asc",
+        "desc": "Aptiv DVL을 CANalyzer용 ASC 텍스트로 변환. csv 변환·영상(DJLP) 변환의 선행 단계.",
+        "adapter": "aptiv",
+        "options": {"input_format": "dvl", "asc": True},
+        "input_hint": "세션 폴더 또는 그 상위 폴더 (예: ...\raw\20251213). 하위의 .dvl 전부 대상, 이미 .asc가 있으면 스킵.",
+    },
+    {
+        "id": "avi2raw",
+        "title": "영상: .avi(DJLP) → .raw + timestamp.txt",
+        "desc": "DJLP 코덱 영상을 raw + 프레임 타임스탬프 + SESSION_canN.txt로. 같은 이름의 .asc가 옆에 있어야 한다(dvl→asc 먼저).",
+        "adapter": "djlp",
+        "options": {},
+        "input_hint": "세션 폴더 또는 상위 폴더. _alt.avi는 자동으로 보조 입력 처리.",
+    },
+    {
+        "id": "txt2csv",
+        "title": "CAN: SESSION_canN.txt → _ccan_3_2_1.csv / _pcan.csv",
+        "desc": "csv_extractor. ccan/pcan 배정이 틀리면 자동으로 맞바꿔 재시도한다.",
+        "adapter": "csv",
+        "options": {},
+        "input_hint": "세션 폴더들의 상위 폴더 (예: .../FV/DRV). 각 세션 폴더에 _canN.txt와 SESSION.txt 필요.",
+    },
+    {
+        "id": "pcap2pcd",
+        "title": "라이다: .pcap → PCD tar",
+        "desc": "surf_pcap2pcd_converter(Docker). convert_log.json의 success로 판정, 미완성 tar는 자동 정리.",
+        "adapter": "pcap2pcd",
+        "options": {},
+        "input_hint": "pcap 파일 또는 폴더. tar는 pcap 옆에 생성.",
+    },
+    {
+        "id": "aptiv_custom",
+        "title": "Aptiv 변환기 — 다른 포맷 조합 (고급)",
+        "desc": "dvl/dvs/mudp/asc/mf4 → asc/dvl/dvs/lcm/mudp/pcap/adtf 중 원하는 조합. 고급 설정에서 출력 포맷을 직접 체크.",
+        "adapter": "aptiv",
+        "options": {"input_format": "any"},
+        "input_hint": "입력 포맷 필터와 출력 포맷을 고급 설정에서 지정.",
+    },
+]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 요청 모델
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -168,6 +217,36 @@ def create_app(cfg: Config | None = None, db_path: str | Path | None = None) -> 
     @app.get("/api/adapters")
     def adapters() -> list[dict[str, Any]]:
         return [cls().describe() for cls in ADAPTERS.values()]
+
+    @app.get("/api/presets")
+    def presets() -> list[dict[str, Any]]:
+        return PRESETS
+
+    @app.post("/api/preview")
+    def preview(req: JobRequest) -> dict[str, Any]:
+        """실행 없이 스캔만 — 변환 예정/스킵 건수와 앞부분 목록. 사용자가 실행 전 범위를 확인하는 용도."""
+        if req.adapter not in ADAPTERS:
+            raise HTTPException(400, f"알 수 없는 어댑터: {req.adapter}")
+        try:
+            inputs: list[str | Path] = [str(state.mapper.to_local(p)) for p in req.inputs]
+            output_dir = Path(str(state.mapper.to_local(req.output_dir))) if req.output_dir else None
+        except ValueError as e:
+            raise HTTPException(400, str(e)) from e
+        inst = ADAPTERS[req.adapter]()
+        opts = inst.merge_options(req.options)
+        try:
+            entries = scan(inputs, inst, opts, output_dir=output_dir, force=req.force)
+        except FileNotFoundError as e:
+            raise HTTPException(404, str(e)) from e
+        todo = [e for e in entries if not e.skip]
+        skipped = [e for e in entries if e.skip]
+        return {
+            "total": len(entries),
+            "todo": len(todo),
+            "skipped": len(skipped),
+            "sample_todo": [str(e.item.source) for e in todo[:20]],
+            "sample_skipped": [str(e.item.source) for e in skipped[:10]],
+        }
 
     @app.get("/api/browse")
     def browse(path: str) -> dict[str, Any]:

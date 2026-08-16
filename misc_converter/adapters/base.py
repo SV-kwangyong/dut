@@ -24,6 +24,7 @@ class OptionSpec:
     default: Any = None
     choices: tuple[str, ...] = ()
     help: str = ""
+    group: str = ""  # UI 묶음 — 같은 group의 flag가 켜졌을 때만 부속 옵션을 펼친다
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -32,6 +33,7 @@ class OptionSpec:
             "default": self.default,
             "choices": list(self.choices),
             "help": self.help,
+            "group": self.group,
         }
 
 

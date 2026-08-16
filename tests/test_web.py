@@ -1,5 +1,6 @@
 import sys
 import time
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -147,3 +148,22 @@ def test_meta_and_index(client):
     assert client.get("/api/meta").json()["version"]
     r = client.get("/")
     assert r.status_code == 200 and "misc_converter" in r.text
+
+
+def test_presets_endpoint(client):
+    data = client.get("/api/presets").json()
+    ids = [p["id"] for p in data]
+    assert ids[0] == "dvl2asc" and {"avi2raw", "txt2csv", "pcap2pcd"} <= set(ids)
+    assert data[0]["adapter"] == "aptiv" and data[0]["options"]["asc"] is True
+
+
+def test_preview_counts_without_running(client, tree):
+    _, d = tree
+    (d / "a.asc").write_bytes(b"done")
+    r = client.post("/api/preview", json={"adapter": "aptiv", "inputs": [d.as_posix()], "options": {"asc": True}})
+    assert r.status_code == 200
+    j = r.json()
+    assert (j["total"], j["todo"], j["skipped"]) == (2, 1, 1)
+    assert [Path(x).name for x in j["sample_todo"]] == ["b.dvl"] and client.tool.calls == 0
+    r = client.post("/api/preview", json={"adapter": "aptiv", "inputs": [(d / "nope").as_posix()], "options": {}})
+    assert r.status_code == 404

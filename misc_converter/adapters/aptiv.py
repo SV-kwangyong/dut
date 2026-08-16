@@ -54,36 +54,55 @@ class AptivAdapter(Adapter):
     backend_kind = "wine"
     options = [
         OptionSpec(
-            "input_format", "choice", "dvl", (*INPUT_FORMATS.keys(), "any"), "입력 포맷 필터(트리 스캔 시 이 확장자만)"
+            "input_format",
+            "choice",
+            "dvl",
+            (*INPUT_FORMATS.keys(), "any"),
+            "입력 포맷 필터 (트리 스캔 시 이 확장자만 대상)",
         ),
-        OptionSpec("asc", "flag", False, help="ASC 내보내기 (CAN 텍스트 트레이스, 주력 경로)"),
-        OptionSpec("ascbase", "choice", "hex", ("hex", "dec"), "ASC 숫자 표기"),
-        OptionSpec("asctimeref", "choice", "absolute", ("absolute", "relative"), "ASC 타임스탬프 기준"),
-        OptionSpec("dvl", "flag", False, help="DVL 내보내기"),
+        # ── ASC (주력 경로) ──
+        OptionSpec("asc", "flag", False, help="ASC 내보내기 — CAN 텍스트 트레이스(CANalyzer용)", group="asc"),
+        OptionSpec("ascbase", "choice", "hex", ("hex", "dec"), "ASC 숫자 표기", group="asc"),
+        OptionSpec("asctimeref", "choice", "absolute", ("absolute", "relative"), "ASC 타임스탬프 기준", group="asc"),
+        # ── DVL ──
+        OptionSpec("dvl", "flag", False, help="DVL 내보내기", group="dvl"),
         OptionSpec(
             "dvlversion",
             "choice",
             "v32",
             ("v20", "v21", "v22", "v23", "vCANZ", "v30", "v31", "v31a", "v32"),
             "출력 DVL 버전",
+            group="dvl",
         ),
-        OptionSpec("dvs", "flag", False, help="DVS 내보내기"),
-        OptionSpec("dvsextension", "str", "dvs", help="DVS 출력 확장자"),
-        OptionSpec("dvssectionname", "str", "DXDAQ0", help="DVS 섹션 이름(8자 이하)"),
-        OptionSpec("dvssectionsize", "int", 1500, help="DVS 섹션 크기(byte)"),
-        OptionSpec("lcm", "flag", False, help="LCM 내보내기"),
-        OptionSpec("lcmvideo1", "str", None, help="LCM 입력의 주 비디오 채널명"),
-        OptionSpec("mudp", "flag", False, help="MUDP 내보내기"),
-        OptionSpec("ethernetmap", "choice", "default", ("default", "custom", "radars", "adasEcu"), "이더넷 매핑 방식"),
-        OptionSpec("ethsrcmac", "str", None, help="소스 MAC"),
-        OptionSpec("ethdestmac", "str", None, help="목적지 MAC"),
-        OptionSpec("ethsrcip", "str", None, help="소스 IP"),
-        OptionSpec("ethdestip", "str", None, help="목적지 IP"),
-        OptionSpec("ethsrcport", "int", 50014, help="소스 UDP 포트"),
-        OptionSpec("ethdestport", "int", 50015, help="목적지 UDP 포트"),
-        OptionSpec("pcap", "flag", False, help="PCAP 내보내기"),
-        OptionSpec("pcapmtu", "int", 1500, help="PCAP MTU(byte)"),
-        OptionSpec("adtf", "flag", False, help="ADTF 내보내기"),
+        # ── DVS ──
+        OptionSpec("dvs", "flag", False, help="DVS 내보내기", group="dvs"),
+        OptionSpec("dvsextension", "str", "dvs", help="DVS 출력 확장자", group="dvs"),
+        OptionSpec("dvssectionname", "str", "DXDAQ0", help="DVS 섹션 이름(8자 이하)", group="dvs"),
+        OptionSpec("dvssectionsize", "int", 1500, help="DVS 섹션 크기(byte)", group="dvs"),
+        # ── LCM ──
+        OptionSpec("lcm", "flag", False, help="LCM 내보내기", group="lcm"),
+        OptionSpec("lcmvideo1", "str", None, help="LCM 입력의 주 비디오 채널명", group="lcm"),
+        # ── MUDP (이더넷 매핑 옵션 공유) ──
+        OptionSpec("mudp", "flag", False, help="MUDP 내보내기", group="mudp"),
+        OptionSpec(
+            "ethernetmap",
+            "choice",
+            "default",
+            ("default", "custom", "radars", "adasEcu"),
+            "이더넷 매핑 방식",
+            group="mudp",
+        ),
+        OptionSpec("ethsrcmac", "str", None, help="소스 MAC", group="mudp"),
+        OptionSpec("ethdestmac", "str", None, help="목적지 MAC", group="mudp"),
+        OptionSpec("ethsrcip", "str", None, help="소스 IP", group="mudp"),
+        OptionSpec("ethdestip", "str", None, help="목적지 IP", group="mudp"),
+        OptionSpec("ethsrcport", "int", 50014, help="소스 UDP 포트", group="mudp"),
+        OptionSpec("ethdestport", "int", 50015, help="목적지 UDP 포트", group="mudp"),
+        # ── PCAP ──
+        OptionSpec("pcap", "flag", False, help="PCAP 내보내기 (이더넷 매핑 옵션은 MUDP 항목 공유)", group="pcap"),
+        OptionSpec("pcapmtu", "int", 1500, help="PCAP MTU(byte)", group="pcap"),
+        # ── ADTF ──
+        OptionSpec("adtf", "flag", False, help="ADTF 내보내기", group="adtf"),
     ]
 
     def match(self, path: Path, opts: dict[str, Any]) -> bool:

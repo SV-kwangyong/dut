@@ -1,20 +1,32 @@
-# Wine 검증 스파이크 / 운영 런타임 이미지 — Windows 전용 변환기(AptivFileConversion .NET 4.6.1, DJLPConvertTool Qt5)를
-# 우분투에서 구동한다. 스펙 §4. WINEPREFIX는 볼륨(/opt/wineprefix)에 두어 dotnet 설치를 재사용한다.
+# Wine 검증 스파이크 / 운영 런타임 이미지 — Windows 전용 변환기(AptivFileConversion .NET 4.6.1 x86, DJLPConvertTool Qt5 x64)를
+# 우분투에서 구동한다. 스펙 §4. WINEPREFIX는 볼륨(/opt/wineprefix)에 두어 런타임 설치를 재사용한다.
+#
+# 스파이크 실측(2026-08-16, wine-11.0):
+# - DJLPConvertTool은 64비트 exe → win32 prefix에서 "Bad EXE format". win64 prefix 필수(x86 Aptiv는 WoW64로 동작).
+# - winetricks dotnet461/48은 Wine 5.18+에서 "broken"으로 차단(bug 49897). Wine 공식 .NET 호환 런타임인 wine-mono를 쓴다.
+#   /usr/share/wine/mono/에 msi를 두면 wineboot가 prefix 생성 시 자동 설치한다.
 FROM ubuntu:22.04
-# WINEARCH=win32: winetricks dotnet46x는 64비트 prefix 미지원이며 대상 exe(AptivFileConversion)도 x86이다
-ENV DEBIAN_FRONTEND=noninteractive WINEARCH=win32 WINEPREFIX=/opt/wineprefix WINEDEBUG=-all
+ENV DEBIAN_FRONTEND=noninteractive WINEARCH=win64 WINEPREFIX=/opt/wineprefix WINEDEBUG=-all
+ARG WINE_MONO_VERSION=10.4.1
 RUN dpkg --add-architecture i386 && apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates curl gnupg2 software-properties-common xvfb xauth cabextract unzip python3 python3-pip \
+    ca-certificates curl gnupg2 software-properties-common xvfb xauth cabextract unzip wget python3 python3-pip \
  && mkdir -pm755 /etc/apt/keyrings \
  && curl -fsSL https://dl.winehq.org/wine-builds/winehq.key -o /etc/apt/keyrings/winehq-archive.key \
  && curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources -o /etc/apt/sources.list.d/winehq-jammy.sources \
- && apt-get update && apt-get install -y --no-install-recommends winehq-stable winetricks \
+ && apt-get update && apt-get install -y --no-install-recommends winehq-stable \
  && rm -rf /var/lib/apt/lists/*
+# wine-mono: Wine 11.0 ↔ wine-mono 10.4.1. 이 위치에 두면 wineboot가 자동 설치
+RUN mkdir -p /usr/share/wine/mono \
+ && curl -fsSL "https://dl.winehq.org/wine/wine-mono/${WINE_MONO_VERSION}/wine-mono-${WINE_MONO_VERSION}-x86.msi" \
+      -o "/usr/share/wine/mono/wine-mono-${WINE_MONO_VERSION}-x86.msi"
+# 최신 winetricks(폴백용 — apt 버전은 2021년이라 URL 노후)
+RUN curl -fsSL https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -o /usr/local/bin/winetricks \
+ && chmod +x /usr/local/bin/winetricks
 # fastapi/uvicorn: 운영 이미지 겸용(스파이크는 CLI만 사용)
-RUN pip3 install --no-cache-dir fastapi uvicorn
+RUN pip3 install --no-cache-dir --upgrade pip && pip3 install --no-cache-dir fastapi uvicorn
 WORKDIR /app
 COPY . /app
-RUN pip3 install --no-cache-dir --upgrade pip && pip3 install --no-cache-dir /app
+RUN pip3 install --no-cache-dir /app
 COPY docker/spike.sh /usr/local/bin/spike.sh
 RUN chmod +x /usr/local/bin/spike.sh
 VOLUME ["/opt/wineprefix", "/opt/tools", "/mnt/qumulo"]

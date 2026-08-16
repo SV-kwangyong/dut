@@ -21,19 +21,18 @@ step "0. wineprefix 초기화 (최초 1회 수 분)"
 if [ ! -f "$WINEPREFIX/system.reg" ]; then wineboot -u >/dev/null 2>&1; fi
 echo "wine: $(wine --version)"
 
-step "1. .NET Framework 4.x 준비 (winetricks dotnet461 → 실패 시 dotnet48). 최초 1회 5~15분"
+step "1. .NET 런타임 — wine-mono(자동 설치) 확인, 없으면 msi 수동 설치, 최후 winetricks --force dotnet461"
+has_mono() { wine uninstaller --list 2>/dev/null | grep -qi "wine mono"; }
 has_dotnet() { wine uninstaller --list 2>/dev/null | grep -qi "Microsoft .NET Framework 4"; }
-if has_dotnet; then R[dotnet]="PASS (이미 설치됨)"
+echo "prefix arch: $(grep -m1 '#arch' "$WINEPREFIX/system.reg" 2>/dev/null || echo '?')"
+if has_mono; then R[dotnet]="PASS (wine-mono 자동 설치)"
 else
-  echo "prefix arch: $(grep -m1 '#arch' "$WINEPREFIX/system.reg" 2>/dev/null || echo '?')  winetricks: $(winetricks --version 2>/dev/null | head -1)"
-  if winetricks -q dotnet461 >"$OUT/winetricks_dotnet461.log" 2>&1 && has_dotnet; then R[dotnet]="PASS (dotnet461)"
-  else
-    echo "dotnet461 실패 → dotnet48 시도"; tail -5 "$OUT/winetricks_dotnet461.log"
-    if winetricks -q dotnet48 >"$OUT/winetricks_dotnet48.log" 2>&1 && has_dotnet; then R[dotnet]="PASS (dotnet48)"
-    else R[dotnet]="FAIL ($OUT/winetricks_*.log 확인)"; tail -5 "$OUT/winetricks_dotnet48.log"; fi
-  fi
+  MSI=$(ls /usr/share/wine/mono/*.msi 2>/dev/null | head -1)
+  if [ -n "$MSI" ] && wine msiexec /i "$MSI" /qn >"$OUT/wine_mono_install.log" 2>&1 && has_mono; then R[dotnet]="PASS (wine-mono msi 수동 설치)"
+  elif winetricks -q --force dotnet461 >"$OUT/winetricks_dotnet461.log" 2>&1 && has_dotnet; then R[dotnet]="PASS (winetricks dotnet461 --force)"
+  else R[dotnet]="FAIL ($OUT/wine_mono_install.log, winetricks_dotnet461.log 확인)"; fi
 fi
-echo "${R[dotnet]}"
+echo "${R[dotnet]}"; echo "--- 설치된 런타임:"; wine uninstaller --list 2>/dev/null | grep -iE "mono|\.NET" | head -5
 
 step "2. AptivFileConversion --help (콘솔 모드 기동)"
 if timeout 120 xvfb-run -a wine "$(winpath "$APTIV")" --help 2>&1 | tee "$OUT/aptiv_help.txt" | grep -q -- "--asc"; then

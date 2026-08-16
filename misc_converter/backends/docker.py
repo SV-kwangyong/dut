@@ -9,6 +9,7 @@ from misc_converter.backends.base import base_env
 
 class DockerBackend:
     kind = "docker"
+    use_pty = False
 
     def __init__(
         self,

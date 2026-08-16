@@ -5,6 +5,8 @@ exit code는 참고 정보일 뿐 판정 근거가 아니다(WinForms exe는 실
 
 from __future__ import annotations
 
+import importlib
+import os
 import re
 import subprocess
 import time
@@ -70,14 +72,9 @@ def run_item(
         result.argv = backend.wrap(argv)
         adapter.prepare(item, current_opts)
         try:
-            proc = subprocess.run(
-                result.argv,
-                capture_output=True,
-                timeout=timeout_s,
-                env=backend.env(),
+            returncode, output = run_process(
+                result.argv, backend.env(), timeout_s, use_pty=getattr(backend, "use_pty", False)
             )
-            returncode: int | None = proc.returncode
-            output = _decode(proc.stdout) + "\n" + _decode(proc.stderr)
         except subprocess.TimeoutExpired as e:
             returncode = None
             output = _decode(e.stdout) + "\n" + _decode(e.stderr)
@@ -107,6 +104,74 @@ def run_item(
 
     result.duration_s = time.monotonic() - started
     return result
+
+
+def run_process(
+    argv: list[str], env: dict[str, str], timeout_s: float, use_pty: bool = False
+) -> tuple[int | None, str]:
+    """도구 프로세스 1회 실행 → (returncode, 합쳐진 stdout/stderr). 타임아웃은 subprocess.TimeoutExpired."""
+    if use_pty and os.name == "posix":
+        return _run_with_pty(argv, env, timeout_s)
+    proc = subprocess.run(argv, capture_output=True, timeout=timeout_s, env=env)
+    return proc.returncode, _decode(proc.stdout) + "\n" + _decode(proc.stderr)
+
+
+def _run_with_pty(argv: list[str], env: dict[str, str], timeout_s: float) -> tuple[int | None, str]:
+    """pseudo-terminal 아래에서 실행 — 콘솔 API(CursorLeft 등)를 쓰는 Windows 콘솔 앱이 파이프에서 죽는 문제 회피."""
+    import select
+
+    # POSIX 전용 모듈 — Windows 개발 환경의 mypy는 속성을 모르므로 동적 import
+    pty: Any = importlib.import_module("pty")
+    fcntl: Any = importlib.import_module("fcntl")
+    termios: Any = importlib.import_module("termios")
+
+    master, slave = pty.openpty()
+
+    def _make_controlling_tty() -> None:
+        # setsid 후 pty를 제어 터미널로 — Wine 콘솔 계층이 isatty + 제어 tty를 함께 요구할 수 있다
+        try:
+            fcntl.ioctl(slave, termios.TIOCSCTTY, 0)
+        except OSError:
+            pass
+
+    try:
+        proc = subprocess.Popen(
+            argv,
+            stdin=slave,
+            stdout=slave,
+            stderr=slave,
+            env=env,
+            close_fds=True,
+            start_new_session=True,
+            preexec_fn=_make_controlling_tty,
+        )
+    finally:
+        os.close(slave)
+
+    chunks: list[bytes] = []
+    deadline = time.monotonic() + timeout_s
+    try:
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                proc.kill()
+                proc.wait()
+                raise subprocess.TimeoutExpired(argv, timeout_s, output=b"".join(chunks))
+            ready, _, _ = select.select([master], [], [], min(remaining, 1.0))
+            if ready:
+                try:
+                    data = os.read(master, 65536)
+                except OSError:  # EIO: 자식이 pty를 닫음
+                    break
+                if not data:
+                    break
+                chunks.append(data)
+            elif proc.poll() is not None:
+                break
+        returncode = proc.wait(timeout=max(1.0, deadline - time.monotonic()))
+    finally:
+        os.close(master)
+    return returncode, _decode(b"".join(chunks))
 
 
 def _decode(data: bytes | str | None) -> str:

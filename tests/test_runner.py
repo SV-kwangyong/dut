@@ -1,3 +1,5 @@
+import os
+import sys
 from typing import Any
 
 import pytest
@@ -121,6 +123,37 @@ def test_precheck_blocks_execution(make_fake_tool, py_backend, item, opts):
     tool = make_fake_tool("ok")
     r = run_item(item, _PrecheckAdapter(), opts, py_backend, tool.path, retries=2, timeout_s=10)
     assert r.failure is FailureKind.LAUNCH_ERROR and r.message == "선행 파일 없음" and tool.calls == 0
+
+
+@pytest.mark.skipif(os.name != "posix", reason="pty는 POSIX 전용")
+def test_run_process_with_pty_gives_tty_and_captures_output(tmp_path):
+    from misc_converter.engine.runner import run_process
+
+    script = tmp_path / "tty_probe.py"
+    script.write_text("import sys, os; print('isatty', os.isatty(1)); print('done'); sys.exit(3)")
+    rc, out = run_process([sys.executable, str(script)], dict(os.environ), timeout_s=10, use_pty=True)
+    assert rc == 3 and "isatty True" in out and "done" in out
+
+
+@pytest.mark.skipif(os.name != "posix", reason="pty는 POSIX 전용")
+def test_run_process_with_pty_timeout(tmp_path):
+    import subprocess
+
+    from misc_converter.engine.runner import run_process
+
+    script = tmp_path / "hang.py"
+    script.write_text("import time; print('start', flush=True); time.sleep(30)")
+    with pytest.raises(subprocess.TimeoutExpired):
+        run_process([sys.executable, str(script)], dict(os.environ), timeout_s=1, use_pty=True)
+
+
+def test_run_process_without_pty(tmp_path):
+    from misc_converter.engine.runner import run_process
+
+    script = tmp_path / "probe.py"
+    script.write_text("import sys, os; print('isatty', os.isatty(1)); print('err', file=sys.stderr); sys.exit(0)")
+    rc, out = run_process([sys.executable, str(script)], dict(os.environ), timeout_s=10, use_pty=False)
+    assert rc == 0 and "isatty False" in out and "err" in out
 
 
 def test_classify_matrix():

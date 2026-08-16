@@ -10,6 +10,7 @@ from misc_converter.paths import PathMapper
 
 class WineBackend:
     kind = "wine"
+    use_pty = True
 
     def __init__(self, bin: str = "wine", prefix: str = "", xvfb: bool = True) -> None:
         self._bin = bin

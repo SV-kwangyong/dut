@@ -7,6 +7,7 @@ from misc_converter.backends.base import base_env
 
 class LocalBackend:
     kind = "local"
+    use_pty = False
 
     def wrap(self, argv: list[str]) -> list[str]:
         return list(argv)

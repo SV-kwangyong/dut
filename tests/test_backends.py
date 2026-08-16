@@ -46,3 +46,9 @@ def test_docker_wrap():
 def test_docker_cpus_and_no_user():
     b = DockerBackend(bin="docker", image="img", volumes=[], user=None, cpus=8)
     assert b.wrap([]) == ["docker", "run", "--rm", "--cpus", "8", "img"]
+
+
+def test_use_pty_flags():
+    assert LocalBackend().use_pty is False
+    assert DockerBackend(bin="docker", image="i", volumes=[]).use_pty is False
+    assert WineBackend().use_pty is True

@@ -2,7 +2,7 @@
 
 # SPEC — misc_converter: 기타 인바운드 포맷 변환 웹 서비스
 
-> 상태: 승인·v1 구현 완료(2026-08-16, 실환경 검증 전) | 작성: 2026-08-16 | 근거 대화: avi_convert 도구 통합 브레인스토밍
+> 상태: v1 구현 완료 + Wine 스파이크 통과(2026-08-16, mlops14) — 배포 단계 | 작성: 2026-08-16 | 근거 대화: avi_convert 도구 통합 브레인스토밍
 > 거버넌스: [`docs/CONSTITUTION.md`](../CONSTITUTION.md) → [`docs/RULE.md`](../RULE.md) 전면 적용 (dut 저장소에서 이식)
 
 ## 1. 배경과 문제
@@ -166,7 +166,7 @@ dut_test/
 
 | # | 항목 | 해소 시점 | 코드에서의 흡수 방식 |
 |---|---|---|---|
-| 1 | Wine에서 AptivFileConversion·DJLP 구동 성패 | `docker/spike.sh` 실행(서버 필요) | 실패 시 해당 어댑터만 비활성 안내 |
+| 1 | ~~Wine에서 AptivFileConversion·DJLP 구동 성패~~ **해결(2026-08-16, mlops14, wine-11.0 + wine-mono 10.4.1, win64 prefix)**: 엔진 경유 dvl→asc 60,111줄 정상, DJLP CLI 기동 정상. 조건: Aptiv는 **pty 필수**(파이프 stdout이면 `Console.CursorLeft`로 Invalid handle — Windows에서도 동일) → Wine 백엔드 `use_pty=True` | — | `engine/runner.py` `_run_with_pty` |
 | 2 | ~~DJLPConvertTool CLI 옵션 표면 실측~~ **해결(2026-08-16 스파이크)**: `-s/--source <PATH>`, 출력 위치 옵션 없음 | — | 기본 템플릿 `[exe, -s, input]` 반영 |
 | 3 | AptivFileConversion lcm·adtf 출력 확장자 실측 | 샘플 변환 1회 | `adapters/aptiv.py` `WRITERS` 값 갱신 (현재 `None` → stem.* glob 검증) |
 | 4 | 우분투 서버 호스트 확정(IP·마운트·docker) | 배포 전 | `config.json` |

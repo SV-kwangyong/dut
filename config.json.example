@@ -3,7 +3,7 @@
     "qumulo": {"linux": "/mnt/qumulo", "windows": "\\qumulo.stradvision.com\datagroup"}
   },
   "tools": {
-    "aptiv": "/opt/tools/AptivFileConversion_v2.1.5/AptivFileConversion.exe",
+    "aptiv": "/opt/tools/Tool_dvl_to_asc/AptivFileConversion_v2.1.5/AptivFileConversion.exe",
     "djlp": "/opt/tools/DJLPConvertTool/DJLPConvertTool_update7.exe",
     "csv_extractor": "/opt/tools/txt_to_csv/csv_extractor-3.10.0",
     "pcap2pcd_image": "surf_pcap2pcd_converter:latest"

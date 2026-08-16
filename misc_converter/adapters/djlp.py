@@ -50,4 +50,6 @@ class DjlpAdapter(Adapter):
         return [part.format(**subst) for part in self.argv_template]
 
     def expected_outputs(self, item: WorkItem, opts: dict[str, Any]) -> list[Path]:
-        return [item.output_dir / f"{item.stem}.raw", item.output_dir / f"{item.stem}.timestamp.txt"]
+        # exe에 출력 위치 옵션이 없어(실측) 산출물은 항상 원본 옆에 생긴다 — output_dir 지정은 무시
+        d = item.source.parent
+        return [d / f"{item.stem}.raw", d / f"{item.stem}.timestamp.txt"]

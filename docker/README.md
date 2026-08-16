@@ -29,6 +29,14 @@ docker run --rm -it \
 | djlp_help | 프로세스가 정상 종료 — 출력에서 CLI 옵션 표면을 실측해 `config.json` `djlp_argv_template`에 반영 |
 | djlp_convert | `.raw` 산출물 존재 |
 
+## 스파이크 결과 (2026-08-16, mlops14, wine-11.0)
+| 단계 | 결과 | 비고 |
+|---|---|---|
+| dotnet | PASS | wine-mono 10.4.1 자동 설치(win64 prefix). winetricks dotnet46x/48은 Wine 5.18+에서 차단됨 |
+| aptiv_help / engine | PASS | 엔진 경유 dvl→asc 60,111줄. **pty 필수** — 파이프 stdout이면 Console.CursorLeft로 "Invalid handle" |
+| djlp_help | PASS | 64비트 exe → win64 prefix 필수. CLI: `-s/--source <PATH>`, 출력 위치 옵션 없음(원본 옆) |
+| 3.(진단) | 참고용 | `timeout`+`script` 조합 문제로 FAIL 표시될 수 있음 — 판정은 engine 단계 |
+
 ## 실패 분기 (스펙 §4)
 FAIL한 exe의 단계는 웹에서 비활성 안내로 두고 나머지 단계는 그대로 배포한다. 대안(예: 해당 단계만 GUI 수동 유지)은 그 시점에 재결정.
 

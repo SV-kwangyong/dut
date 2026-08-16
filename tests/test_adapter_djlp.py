@@ -41,7 +41,7 @@ def test_precheck_requires_asc(tmp_path):
     assert a.precheck(it, a.merge_options({})) is None
 
 
-def test_expected_outputs(tmp_path):
+def test_expected_outputs_always_next_to_source(tmp_path):
     src = tmp_path / "a.avi"
-    it = WorkItem(source=src, output_dir=tmp_path)
+    it = WorkItem(source=src, output_dir=tmp_path / "elsewhere")
     assert DjlpAdapter().expected_outputs(it, {}) == [tmp_path / "a.raw", tmp_path / "a.timestamp.txt"]

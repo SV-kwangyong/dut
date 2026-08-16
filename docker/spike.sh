@@ -39,9 +39,9 @@ if timeout 120 script -qfec "xvfb-run -a wine $(winpath "$APTIV") --help" "$OUT/
   R[aptiv_help]=PASS; else R[aptiv_help]=FAIL; fi
 echo "${R[aptiv_help]}"
 
-step "3. AptivFileConversion dvl→asc 실변환 (pty 필수 — 파이프면 Console.CursorLeft가 Invalid handle)"
+step "3. [진단] AptivFileConversion dvl→asc — script(1) pty 직접 호출. 판정 기준은 3b(엔진)이며 이 단계는 참고용"
 rm -f "$OUT/$(basename "${DVL%.*}").asc"
-timeout 900 script -qfec "xvfb-run -a wine $(winpath "$APTIV") -i $(winpath "$DVL") -o $(winpath "$OUT") -y --asc --ascbase=hex --asctimeref=absolute" "$OUT/aptiv_run.txt" >/dev/null 2>&1
+script -qfec "xvfb-run -a wine $(winpath "$APTIV") -i $(winpath "$DVL") -o $(winpath "$OUT") -y --asc --ascbase=hex --asctimeref=absolute" "$OUT/aptiv_run.txt" >/dev/null 2>&1
 ASC="$OUT/$(basename "${DVL%.*}").asc"
 if [ -s "$ASC" ] && [ "$(wc -l < "$ASC")" -gt 10 ]; then R[aptiv_convert]="PASS ($(stat -c%s "$ASC") bytes, $(wc -l < "$ASC") lines)"; echo "--- head:"; head -3 "$ASC"; else R[aptiv_convert]="FAIL (aptiv_run.txt 확인)"; tail -c 300 "$OUT/aptiv_run.txt"; fi
 echo "${R[aptiv_convert]}"

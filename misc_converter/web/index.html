@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>misc_converter</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0912;--sidebar:#100e1c;--surface:#171331;--surface2:#1d1839;--surface3:#241e47;
+  --border:rgba(155,140,225,0.13);--border2:rgba(165,150,235,0.22);
+  --purple:#6603d2;--purple-light:#8b5cf6;--purple-dim:rgba(102,3,210,0.18);
+  --text:#edeafc;--text-muted:#9c96bd;--text-dim:#655f85;
+  --green:#34d399;--green-dim:rgba(52,211,153,0.13);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.13);
+  --yellow:#fbbf24;--yellow-dim:rgba(251,191,36,0.14);
+  --blue:#60a5fa;--blue-dim:rgba(96,165,250,0.13);
+  --radius:9px;--mono:'Cascadia Code',Consolas,ui-monospace,monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14.5px}
+#root{height:100%;display:flex}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.sidebar{width:230px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.logo{padding:16px 14px;border-bottom:1px solid var(--border)}
+.logo b{font-size:17px}.logo small{display:block;color:var(--text-dim);font-family:var(--mono);font-size:11px;margin-top:2px}
+.nav-label{padding:14px 13px 5px;font-size:11.5px;font-weight:700;color:var(--text-muted)}
+.nav{margin:1px 8px;padding:8px 11px;border-radius:var(--radius);cursor:pointer;color:#c4bde0;font-size:13.5px}
+.nav:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.nav.active{background:var(--purple-dim);color:#fff;box-shadow:inset 2px 0 0 var(--purple-light)}
+.nav small{display:block;color:var(--text-dim);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0}
+.topbar h1{font-size:17px;font-weight:600}
+.content{flex:1;display:grid;grid-template-columns:minmax(380px,1fr) minmax(420px,1.3fr);gap:16px;padding:16px 20px;overflow:hidden}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.panel-h{padding:11px 14px;border-bottom:1px solid var(--border);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.panel-b{padding:14px;overflow:auto;flex:1}
+label{display:block;font-size:12.5px;color:var(--text-muted);margin:10px 0 4px}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:7px 9px;font-size:13.5px;font-family:inherit}
+textarea{font-family:var(--mono);font-size:12.5px;min-height:70px;resize:vertical}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:6px 0;color:var(--text)}
+.chk input{width:15px;height:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.btn{background:var(--purple);color:#fff;border:0;border-radius:6px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:default}.btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text-muted);padding:5px 10px;font-size:12.5px;font-weight:500}
+.badge{padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.b-queued{background:var(--blue-dim);color:var(--blue)}.b-running{background:var(--yellow-dim);color:var(--yellow)}
+.b-done{background:var(--green-dim);color:var(--green)}.b-failed,.b-error{background:var(--red-dim);color:var(--red)}
+.b-cancelled,.b-interrupted,.b-cancelling{background:rgba(255,255,255,.06);color:var(--text-muted)}
+.job{padding:10px 12px;border:1px solid var(--border);border-radius:7px;margin-bottom:8px;cursor:pointer;background:var(--surface2)}
+.job:hover{border-color:var(--border2)}.job.sel{border-color:var(--purple-light)}
+.job-t{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.job-p{font-family:var(--mono);font-size:11.5px;color:var(--text-muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:5px;background:rgba(255,255,255,.07);border-radius:3px;margin-top:7px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--purple-light);transition:width .3s}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.stat{background:var(--surface3);border-radius:6px;padding:6px 10px;font-size:12.5px}.stat b{font-size:15px;margin-right:4px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--text-muted);font-weight:600}td.mono{font-family:var(--mono);font-size:11.5px;word-break:break-all}
+.err{color:var(--red);font-size:12.5px;white-space:pre-wrap;font-family:var(--mono)}
+.muted{color:var(--text-muted);font-size:12.5px}
+.help{color:var(--text-dim);font-size:11.5px;margin-top:2px}
+.browse{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;max-height:220px;overflow:auto;margin-top:6px}
+.browse div{padding:2px 4px;cursor:pointer;border-radius:3px}.browse div:hover{background:var(--purple-dim)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useRef} = React;
+const api = async (path, opt) => {
+  const r = await fetch(path, opt);
+  const j = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(j.detail || r.statusText);
+  return j;
+};
+const STATUS_KO = {queued:'대기', running:'실행 중', done:'완료', failed:'실패 있음', error:'오류', cancelled:'취소', cancelling:'취소 중', interrupted:'중단'};
+
+function OptionField({spec, value, onChange}) {
+  const v = value === undefined ? spec.default : value;
+  if (spec.kind === 'flag') return (
+    <label className="chk"><input type="checkbox" checked={!!v} onChange={e=>onChange(e.target.checked)} />
+      <span>{spec.name}<span className="help" style={{display:'inline',marginLeft:8}}>{spec.help}</span></span></label>);
+  if (spec.kind === 'choice') return (<div><label>{spec.name}</label>
+    <select value={v ?? ''} onChange={e=>onChange(e.target.value)}>{spec.choices.map(c=><option key={c} value={c}>{c}</option>)}</select>
+    <div className="help">{spec.help}</div></div>);
+  return (<div><label>{spec.name}</label>
+    <input type={spec.kind==='int'?'number':'text'} value={v ?? ''} placeholder={spec.default ?? ''}
+      onChange={e=>onChange(spec.kind==='int' ? (e.target.value===''?null:Number(e.target.value)) : e.target.value)} />
+    <div className="help">{spec.help}</div></div>);
+}
+
+function SubmitPanel({adapters, meta, onSubmitted}) {
+  const [name, setName] = useState('aptiv');
+  const [inputs, setInputs] = useState('');
+  const [outputDir, setOutputDir] = useState('');
+  const [opts, setOpts] = useState({});
+  const [flags, setFlags] = useState({dry_run:false, force:false, workers:'', retries:''});
+  const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  const [browsePath, setBrowsePath] = useState(''); const [listing, setListing] = useState(null);
+  const ad = adapters.find(a=>a.name===name);
+  useEffect(()=>{ setOpts({}); }, [name]);
+  const browse = async (p) => { try { const j = await api('/api/browse?path='+encodeURIComponent(p)); setListing(j); setBrowsePath(j.path); setErr(''); } catch(e){ setErr(e.message); } };
+  const submit = async () => {
+    setBusy(true); setErr('');
+    try {
+      const body = {adapter:name, inputs: inputs.split(/\r?\n/).map(s=>s.trim()).filter(Boolean), options: opts,
+        output_dir: outputDir||null, force: flags.force, dry_run: flags.dry_run,
+        workers: flags.workers===''?null:Number(flags.workers), retries: flags.retries===''?null:Number(flags.retries)};
+      const j = await api('/api/jobs', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      onSubmitted(j.id);
+    } catch(e){ setErr(e.message); } finally { setBusy(false); }
+  };
+  return (<div className="panel">
+    <div className="panel-h">변환 잡 제출 <span className="muted">{ad?.description}</span></div>
+    <div className="panel-b">
+      <label>입력 경로 (한 줄에 하나 — UNC·/mnt 경로 모두 가능, 디렉터리면 하위 전체 스캔)</label>
+      <textarea value={inputs} onChange={e=>setInputs(e.target.value)} placeholder={'\\\\qumulo.stradvision.com\\datagroup\\datateam3\\Repository\\01_raw_data\\...\n/mnt/qumulo/datateam3/...'} />
+      <div className="row" style={{marginTop:6}}>
+        <input type="text" value={browsePath} onChange={e=>setBrowsePath(e.target.value)} placeholder="탐색할 경로" />
+        <button className="btn ghost" style={{flex:'0 0 auto'}} onClick={()=>browse(browsePath || (meta.mounts?.[0]||''))}>탐색</button>
+      </div>
+      {listing && <div className="browse">
+        <div onClick={()=>browse(listing.path.replace(/\/[^/]+$/,'')||'/')}>.. </div>
+        {listing.dirs.map(d=><div key={d} onClick={()=>browse(listing.path+'/'+d)}>📁 {d}</div>)}
+        {listing.files.slice(0,50).map(f=><div key={f} style={{color:'var(--text-dim)'}}>· {f}</div>)}
+        <div style={{marginTop:6}}><button className="btn ghost" onClick={()=>setInputs(v=>(v?v+'\n':'')+listing.path)}>이 폴더를 입력에 추가</button></div>
+      </div>}
+      <label>출력 디렉터리 (비우면 원본 옆)</label>
+      <input type="text" value={outputDir} onChange={e=>setOutputDir(e.target.value)} />
+      <label style={{marginTop:14}}>어댑터</label>
+      <select value={name} onChange={e=>setName(e.target.value)}>{adapters.map(a=><option key={a.name} value={a.name}>{a.name} — {a.description}</option>)}</select>
+      <div className="grid2" style={{marginTop:6}}>
+        {ad?.options.map(s=><OptionField key={s.name} spec={s} value={opts[s.name]} onChange={v=>setOpts(o=>({...o,[s.name]:v}))} />)}
+      </div>
+      <div className="row" style={{marginTop:12}}>
+        <div><label>workers</label><input type="number" value={flags.workers} onChange={e=>setFlags(f=>({...f,workers:e.target.value}))} placeholder="설정 기본" /></div>
+        <div><label>retries</label><input type="number" value={flags.retries} onChange={e=>setFlags(f=>({...f,retries:e.target.value}))} placeholder="설정 기본" /></div>
+      </div>
+      <label className="chk"><input type="checkbox" checked={flags.dry_run} onChange={e=>setFlags(f=>({...f,dry_run:e.target.checked}))} /> dry-run (실행 없이 계획만)</label>
+      <label className="chk"><input type="checkbox" checked={flags.force} onChange={e=>setFlags(f=>({...f,force:e.target.checked}))} /> force (기존 산출물 무시하고 재변환)</label>
+      {err && <div className="err" style={{marginTop:8}}>{err}</div>}
+      <div style={{marginTop:14}}><button className="btn" disabled={busy || !inputs.trim()} onClick={submit}>{busy?'제출 중…':'변환 시작'}</button></div>
+    </div>
+  </div>);
+}
+
+function JobDetail({job, onCancel}) {
+  if (!job) return <div className="muted">잡을 선택하세요.</div>;
+  const s = job.summary;
+  return (<div>
+    <div className="job-t"><b>{job.adapter}</b> <span className={'badge b-'+job.status}>{STATUS_KO[job.status]||job.status}</span></div>
+    <div className="job-p" style={{whiteSpace:'normal'}}>{job.inputs.join(' · ')}</div>
+    <div className="muted" style={{marginTop:4}}>생성 {job.created_at} {job.started_at && ' · 시작 '+job.started_at} {job.finished_at && ' · 종료 '+job.finished_at}</div>
+    {(job.status==='queued'||job.status==='running') && <div style={{marginTop:8}}><button className="btn ghost" onClick={()=>onCancel(job.id)}>취소</button></div>}
+    {job.error && <div className="err" style={{marginTop:8}}>{job.error}</div>}
+    {s && <div>
+      <div className="stats">
+        <span className="stat"><b>{s.total}</b>전체</span><span className="stat" style={{color:'var(--green)'}}><b>{s.converted}</b>변환</span>
+        <span className="stat"><b>{s.skipped}</b>스킵</span><span className="stat" style={{color:'var(--red)'}}><b>{s.failed}</b>실패</span>
+        {s.planned>0 && <span className="stat"><b>{s.planned}</b>계획</span>}{s.cancelled>0 && <span className="stat"><b>{s.cancelled}</b>취소</span>}
+      </div>
+      <div className="muted">로그: <span style={{fontFamily:'var(--mono)'}}>{s.log_path}</span></div>
+      <table style={{marginTop:8}}><thead><tr><th>상태</th><th>파일</th><th>시도</th><th>사유</th></tr></thead><tbody>
+        {s.results.map((r,i)=><tr key={i}><td><span className={'badge b-'+(r.status==='converted'?'done':r.status==='failed'?'failed':'queued')}>{r.status}</span></td>
+          <td className="mono">{r.source}</td><td>{r.attempts||''}</td><td className="err" style={{color:r.status==='failed'?'var(--red)':'var(--text-dim)'}}>{r.message}</td></tr>)}
+      </tbody></table>
+    </div>}
+  </div>);
+}
+
+function App() {
+  const [adapters, setAdapters] = useState([]); const [meta, setMeta] = useState({});
+  const [jobs, setJobs] = useState([]); const [sel, setSel] = useState(null); const [detail, setDetail] = useState(null);
+  const refresh = useCallback(async ()=>{ try{ setJobs(await api('/api/jobs?limit=60')); if (sel) setDetail(await api('/api/jobs/'+sel)); }catch(e){} }, [sel]);
+  useEffect(()=>{ api('/api/adapters').then(setAdapters); api('/api/meta').then(setMeta); }, []);
+  useEffect(()=>{ refresh(); const t=setInterval(refresh, 3000); return ()=>clearInterval(t); }, [refresh]);
+  const cancel = async (id) => { await api('/api/jobs/'+id+'/cancel',{method:'POST'}); refresh(); };
+  const running = jobs.filter(j=>j.status==='running'||j.status==='queued').length;
+  return (<>
+    <div className="sidebar">
+      <div className="logo"><b>misc_converter</b><small>v{meta.version||'…'} · 기타 포맷 변환</small></div>
+      <div className="nav-label">어댑터</div>
+      {adapters.map(a=><div key={a.name} className="nav"><span>{a.name}</span><small>{a.description}</small></div>)}
+      <div className="nav-label">마운트</div>
+      {(meta.mounts||[]).map(m=><div key={m} className="nav" style={{fontFamily:'var(--mono)',fontSize:12}}>{m}</div>)}
+    </div>
+    <div className="main">
+      <div className="topbar"><h1>기타 인바운드 포맷 변환</h1><span className={'badge '+(running?'b-running':'b-done')}>{running?`큐 ${running}건`:'대기 없음'}</span></div>
+      <div className="content">
+        <SubmitPanel adapters={adapters} meta={meta} onSubmitted={id=>{setSel(id); refresh();}} />
+        <div className="panel">
+          <div className="panel-h">잡 큐 · 이력 <button className="btn ghost" onClick={refresh}>새로고침</button></div>
+          <div className="panel-b" style={{display:'grid',gridTemplateColumns:'260px 1fr',gap:14,minHeight:0}}>
+            <div style={{overflow:'auto'}}>
+              {jobs.length===0 && <div className="muted">아직 잡이 없습니다.</div>}
+              {jobs.map(j=><div key={j.id} className={'job'+(sel===j.id?' sel':'')} onClick={()=>setSel(j.id)}>
+                <div className="job-t"><b>{j.adapter}</b><span className={'badge b-'+j.status}>{STATUS_KO[j.status]||j.status}</span></div>
+                <div className="job-p">{j.inputs[0]}{j.inputs.length>1?` 외 ${j.inputs.length-1}`:''}</div>
+                {(j.status==='running') && <div className="bar"><i style={{width:(j.progress_total?100*j.progress_done/j.progress_total:0)+'%'}} /></div>}
+                {(j.status==='running') && <div className="help">{j.progress_done}/{j.progress_total}</div>}
+              </div>)}
+            </div>
+            <div style={{overflow:'auto'}}><JobDetail job={detail} onCancel={cancel} /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

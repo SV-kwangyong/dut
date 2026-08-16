@@ -57,3 +57,9 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = ["-v", "--strict-markers"]
 markers = ["slow: 실제 도구·샘플 데이터가 있을 때만 실행하는 스모크 테스트"]
+filterwarnings = [
+    # 서드파티(starlette/fastapi) 내부 deprecation — 우리 코드와 무관
+    "ignore::DeprecationWarning:starlette.*",
+    "ignore::DeprecationWarning:fastapi.*",
+    "ignore::PendingDeprecationWarning:starlette.*",
+]

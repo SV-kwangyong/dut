@@ -1,7 +1,8 @@
 # Wine 검증 스파이크 / 운영 런타임 이미지 — Windows 전용 변환기(AptivFileConversion .NET 4.6.1, DJLPConvertTool Qt5)를
 # 우분투에서 구동한다. 스펙 §4. WINEPREFIX는 볼륨(/opt/wineprefix)에 두어 dotnet 설치를 재사용한다.
 FROM ubuntu:22.04
-ENV DEBIAN_FRONTEND=noninteractive WINEARCH=win64 WINEPREFIX=/opt/wineprefix WINEDEBUG=-all
+# WINEARCH=win32: winetricks dotnet46x는 64비트 prefix 미지원이며 대상 exe(AptivFileConversion)도 x86이다
+ENV DEBIAN_FRONTEND=noninteractive WINEARCH=win32 WINEPREFIX=/opt/wineprefix WINEDEBUG=-all
 RUN dpkg --add-architecture i386 && apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl gnupg2 software-properties-common xvfb xauth cabextract unzip python3 python3-pip \
  && mkdir -pm755 /etc/apt/keyrings \

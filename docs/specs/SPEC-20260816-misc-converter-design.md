@@ -167,7 +167,7 @@ dut_test/
 | # | 항목 | 해소 시점 | 코드에서의 흡수 방식 |
 |---|---|---|---|
 | 1 | Wine에서 AptivFileConversion·DJLP 구동 성패 | `docker/spike.sh` 실행(서버 필요) | 실패 시 해당 어댑터만 비활성 안내 |
-| 2 | DJLPConvertTool CLI 옵션 표면 실측 | 스파이크 4단계 출력 | `config.json` `djlp_argv_template` 수정만으로 반영 |
+| 2 | ~~DJLPConvertTool CLI 옵션 표면 실측~~ **해결(2026-08-16 스파이크)**: `-s/--source <PATH>`, 출력 위치 옵션 없음 | — | 기본 템플릿 `[exe, -s, input]` 반영 |
 | 3 | AptivFileConversion lcm·adtf 출력 확장자 실측 | 샘플 변환 1회 | `adapters/aptiv.py` `WRITERS` 값 갱신 (현재 `None` → stem.* glob 검증) |
 | 4 | 우분투 서버 호스트 확정(IP·마운트·docker) | 배포 전 | `config.json` |
 | 5 | Aptiv 입력 포맷 필터 기본값 `dvl` — 다른 포맷은 `--input-format` 지정 | 구현 중 결정 | 자기 변환(입력==산출물)은 스캔에서 제외 |

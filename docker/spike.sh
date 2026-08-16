@@ -21,11 +21,18 @@ step "0. wineprefix 초기화 (최초 1회 수 분)"
 if [ ! -f "$WINEPREFIX/system.reg" ]; then wineboot -u >/dev/null 2>&1; fi
 echo "wine: $(wine --version)"
 
-step "1. .NET 런타임 준비 — wine-mono 우선, 실패 시 winetricks dotnet461"
-if ! wine uninstaller --list 2>/dev/null | grep -qi mono; then
-  echo "wine-mono 미설치 → winetricks -q dotnet461 시도(시간 소요, 네트워크 필요)"
-  winetricks -q dotnet461 >/tmp/winetricks.log 2>&1 && R[dotnet]=PASS || R[dotnet]="FAIL (winetricks.log 확인)"
-else R[dotnet]="PASS (wine-mono)"; fi
+step "1. .NET Framework 4.x 준비 (winetricks dotnet461 → 실패 시 dotnet48). 최초 1회 5~15분"
+has_dotnet() { wine uninstaller --list 2>/dev/null | grep -qi "Microsoft .NET Framework 4"; }
+if has_dotnet; then R[dotnet]="PASS (이미 설치됨)"
+else
+  echo "prefix arch: $(grep -m1 '#arch' "$WINEPREFIX/system.reg" 2>/dev/null || echo '?')  winetricks: $(winetricks --version 2>/dev/null | head -1)"
+  if winetricks -q dotnet461 >"$OUT/winetricks_dotnet461.log" 2>&1 && has_dotnet; then R[dotnet]="PASS (dotnet461)"
+  else
+    echo "dotnet461 실패 → dotnet48 시도"; tail -5 "$OUT/winetricks_dotnet461.log"
+    if winetricks -q dotnet48 >"$OUT/winetricks_dotnet48.log" 2>&1 && has_dotnet; then R[dotnet]="PASS (dotnet48)"
+    else R[dotnet]="FAIL ($OUT/winetricks_*.log 확인)"; tail -5 "$OUT/winetricks_dotnet48.log"; fi
+  fi
+fi
 echo "${R[dotnet]}"
 
 step "2. AptivFileConversion --help (콘솔 모드 기동)"
@@ -46,8 +53,8 @@ if timeout 120 xvfb-run -a wine "$(winpath "$DJLP")" --help > "$OUT/djlp_help.tx
 echo "${R[djlp_help]}"; echo "--- 출력(옵션 표면 실측용):"; head -40 "$OUT/djlp_help.txt"
 
 if [ -n "$AVI" ]; then
-  step "5. DJLPConvertTool avi→raw 실변환 (기본 argv 템플릿: exe input)"
-  timeout 900 xvfb-run -a wine "$(winpath "$DJLP")" "$(winpath "$AVI")" > "$OUT/djlp_run.txt" 2>&1
+  step "5. DJLPConvertTool avi→raw 실변환 (실측 CLI: -s <PATH>)"
+  timeout 900 xvfb-run -a wine "$(winpath "$DJLP")" -s "$(winpath "$AVI")" > "$OUT/djlp_run.txt" 2>&1
   RAW="$(dirname "$AVI")/$(basename "${AVI%.*}").raw"
   if [ -s "$RAW" ]; then R[djlp_convert]="PASS"; else R[djlp_convert]="FAIL (djlp_run.txt 확인 — argv 템플릿 조정 필요할 수 있음)"; fi
   echo "${R[djlp_convert]}"

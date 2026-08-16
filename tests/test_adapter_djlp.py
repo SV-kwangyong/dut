@@ -17,7 +17,7 @@ def test_build_argv_default_and_custom_template(tmp_path):
     src = tmp_path / "a.avi"
     src.write_bytes(b"x")
     it = WorkItem(source=src, output_dir=tmp_path)
-    assert DjlpAdapter().build_argv(it, {}, "/t.exe", LocalBackend()) == ["/t.exe", src.as_posix()]
+    assert DjlpAdapter().build_argv(it, {}, "/t.exe", LocalBackend()) == ["/t.exe", "-s", src.as_posix()]
     custom = DjlpAdapter(argv_template=["{exe}", "--cli", "{input}", "--out", "{output_dir}", "--name", "{stem}"])
     assert custom.build_argv(it, {}, "/t.exe", LocalBackend()) == [
         "/t.exe",

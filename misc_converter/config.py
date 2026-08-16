@@ -33,7 +33,7 @@ class Config:
     mounts: dict[str, Mount] = field(default_factory=dict)
     wine: WineConfig = WineConfig()
     docker: DockerConfig = DockerConfig()
-    djlp_argv_template: list[str] = field(default_factory=lambda: ["{exe}", "{input}"])
+    djlp_argv_template: list[str] = field(default_factory=lambda: ["{exe}", "-s", "{input}"])
     workers: int = 4
     retries: int = 2
     timeout_s: int = 1800
@@ -62,7 +62,7 @@ def config_from_dict(raw: dict[str, Any]) -> Config:
             xvfb=bool(wine_raw.get("xvfb", True)),
         ),
         docker=DockerConfig(bin=docker_raw.get("bin", "docker"), volumes=list(docker_raw.get("volumes", []))),
-        djlp_argv_template=list(raw.get("djlp_argv_template", ["{exe}", "{input}"])),
+        djlp_argv_template=list(raw.get("djlp_argv_template", ["{exe}", "-s", "{input}"])),
         workers=int(raw.get("workers", 4)),
         retries=int(raw.get("retries", 2)),
         timeout_s=int(raw.get("timeout_s", 1800)),

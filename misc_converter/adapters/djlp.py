@@ -1,8 +1,7 @@
 """DJLPConvertTool_update7.exe 어댑터 — DJLP 코덱 영상(.avi + _alt.avi + .asc) → .raw + .timestamp.txt + SESSION_canN.txt.
 
-바이너리에 CLI 모드("Start CLI mode", QCommandLineParser, 위치 인자 <PATH>)가 있음은 확인됐으나 옵션 표면은
-미실측이다(스펙 열린 항목 2). argv는 config `djlp_argv_template`로 바꿀 수 있게 하고 기본은 `[exe, input]`.
-치환자: {exe} {input} {output_dir} {stem}. 실측 후 템플릿만 고치면 된다.
+CLI 옵션은 Wine 스파이크(2026-08-16, wine-11.0)에서 실측: `-s, --source <PATH>` (출력 위치 옵션 없음 — 원본 옆에 생성).
+argv는 config `djlp_argv_template`로 바꿀 수 있고 기본은 `[exe, -s, input]`. 치환자: {exe} {input} {output_dir} {stem}.
 """
 
 from __future__ import annotations
@@ -15,7 +14,7 @@ from misc_converter.backends.base import Backend
 from misc_converter.engine.models import WorkItem
 
 INPUT_EXTENSIONS = {".avi", ".tavi", ".webm"}
-DEFAULT_TEMPLATE = ["{exe}", "{input}"]
+DEFAULT_TEMPLATE = ["{exe}", "-s", "{input}"]
 
 
 class DjlpAdapter(Adapter):

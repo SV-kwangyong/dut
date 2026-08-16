@@ -23,6 +23,7 @@ class DjlpAdapter(Adapter):
     unit = "file"
     tool_key = "djlp"
     backend_kind = "wine"
+    output_next_to_source = True
     options = [
         OptionSpec("require_asc", "flag", True, help="같은 이름의 .asc가 옆에 없으면 실행하지 않음(2.1 dvl→asc 선행)"),
     ]

@@ -81,6 +81,7 @@ def test_submit_real_run(client, tree):
     assert (d / "a.asc").exists()
     listing = client.get("/api/jobs").json()
     assert listing[0]["id"] == job["id"] and "summary" not in listing[0]
+    assert listing[0]["summary_counts"]["converted"] == 2
 
 
 def test_unc_input_is_mapped(client, tree):
@@ -145,7 +146,8 @@ def test_browse(client, tree):
 
 
 def test_meta_and_index(client):
-    assert client.get("/api/meta").json()["version"]
+    meta = client.get("/api/meta").json()
+    assert meta["version"] and meta["mounts"][0]["windows"].startswith("\\\\")
     r = client.get("/")
     assert r.status_code == 200 and "misc_converter" in r.text
 

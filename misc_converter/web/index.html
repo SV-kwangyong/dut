@@ -10,105 +10,158 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0912;--sidebar:#100e1c;--surface:#171331;--surface2:#1d1839;--surface3:#241e47;
-  --border:rgba(155,140,225,0.13);--border2:rgba(165,150,235,0.22);
-  --purple:#6603d2;--purple-light:#8b5cf6;--purple-dim:rgba(102,3,210,0.18);
-  --text:#edeafc;--text-muted:#9c96bd;--text-dim:#655f85;
-  --green:#34d399;--green-dim:rgba(52,211,153,0.13);
-  --red:#f87171;--red-dim:rgba(248,113,113,0.13);
-  --yellow:#fbbf24;--yellow-dim:rgba(251,191,36,0.14);
-  --blue:#60a5fa;--blue-dim:rgba(96,165,250,0.13);
-  --radius:9px;--mono:'Cascadia Code',Consolas,ui-monospace,monospace;
+  --bg:#0b0a14;--surface:#15122a;--surface2:#1c1836;--surface3:#241f45;
+  --border:rgba(155,140,225,.14);--border2:rgba(165,150,235,.28);
+  --accent:#8b5cf6;--accent-strong:#7c3aed;--accent-dim:rgba(139,92,246,.16);
+  --text:#efecfd;--text-2:#b7b1d6;--text-3:#7d7699;
+  --ok:#34d399;--ok-dim:rgba(52,211,153,.14);
+  --bad:#f87171;--bad-dim:rgba(248,113,113,.14);
+  --warn:#fbbf24;--warn-dim:rgba(251,191,36,.14);
+  --info:#60a5fa;--info-dim:rgba(96,165,250,.14);
+  --r:10px;--mono:'Cascadia Code',Consolas,ui-monospace,monospace;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14.5px}
-#root{height:100%;display:flex}
-::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-.sidebar{width:230px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
-.logo{padding:16px 14px;border-bottom:1px solid var(--border)}
-.logo b{font-size:17px}.logo small{display:block;color:var(--text-dim);font-family:var(--mono);font-size:11px;margin-top:2px}
-.nav-label{padding:14px 13px 5px;font-size:11.5px;font-weight:700;color:var(--text-muted)}
-.nav{margin:1px 8px;padding:8px 11px;border-radius:var(--radius);cursor:pointer;color:#c4bde0;font-size:13.5px}
-.nav:hover{background:rgba(255,255,255,.04);color:var(--text)}
-.nav.active{background:var(--purple-dim);color:#fff;box-shadow:inset 2px 0 0 var(--purple-light)}
-.nav small{display:block;color:var(--text-dim);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
-.topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0}
-.topbar h1{font-size:17px;font-weight:600}
-.content{flex:1;display:grid;grid-template-columns:minmax(380px,1fr) minmax(420px,1.3fr);gap:16px;padding:16px 20px;overflow:hidden}
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;min-height:0}
-.panel-h{padding:11px 14px;border-bottom:1px solid var(--border);font-weight:600;display:flex;justify-content:space-between;align-items:center}
-.panel-b{padding:14px;overflow:auto;flex:1}
-label{display:block;font-size:12.5px;color:var(--text-muted);margin:10px 0 4px}
-input[type=text],input[type=number],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:7px 9px;font-size:13.5px;font-family:inherit}
-textarea{font-family:var(--mono);font-size:12.5px;min-height:70px;resize:vertical}
-.row{display:flex;gap:10px}.row>*{flex:1}
-.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:6px 0;color:var(--text)}
-.chk input{width:15px;height:15px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
-.btn{background:var(--purple);color:#fff;border:0;border-radius:6px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer}
-.btn:disabled{opacity:.5;cursor:default}.btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text-muted);padding:5px 10px;font-size:12.5px;font-weight:500}
-.badge{padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
-.b-queued{background:var(--blue-dim);color:var(--blue)}.b-running{background:var(--yellow-dim);color:var(--yellow)}
-.b-done{background:var(--green-dim);color:var(--green)}.b-failed,.b-error{background:var(--red-dim);color:var(--red)}
-.b-cancelled,.b-interrupted,.b-cancelling{background:rgba(255,255,255,.06);color:var(--text-muted)}
-.job{padding:10px 12px;border:1px solid var(--border);border-radius:7px;margin-bottom:8px;cursor:pointer;background:var(--surface2)}
-.job:hover{border-color:var(--border2)}.job.sel{border-color:var(--purple-light)}
-.job-t{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.job-p{font-family:var(--mono);font-size:11.5px;color:var(--text-muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar{height:5px;background:rgba(255,255,255,.07);border-radius:3px;margin-top:7px;overflow:hidden}
-.bar>i{display:block;height:100%;background:var(--purple-light);transition:width .3s}
-.stats{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
-.stat{background:var(--surface3);border-radius:6px;padding:6px 10px;font-size:12.5px}.stat b{font-size:15px;margin-right:4px}
-table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:top}
-th{color:var(--text-muted);font-weight:600}td.mono{font-family:var(--mono);font-size:11.5px;word-break:break-all}
-.err{color:var(--red);font-size:12.5px;white-space:pre-wrap;font-family:var(--mono)}
-.muted{color:var(--text-muted);font-size:12.5px}
-.help{color:var(--text-dim);font-size:11.5px;margin-top:2px}
-.browse{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;max-height:220px;overflow:auto;margin-top:6px}
-.browse div{padding:2px 4px;cursor:pointer;border-radius:3px}.browse div:hover{background:var(--purple-dim)}
-.step{font-size:12px;font-weight:700;color:var(--purple-light);letter-spacing:.04em;margin:16px 0 6px}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.45}
+#root{height:100%;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+button{font-family:inherit}
+a{color:var(--accent)}
+
+/* ── top bar ── */
+.top{height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--border);background:var(--surface)}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-size:17px}.brand small{color:var(--text-3);font-family:var(--mono);font-size:11.5px}
+.top-right{display:flex;align-items:center;gap:14px;font-size:12.5px;color:var(--text-2)}
+.pill{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.p-idle{background:var(--ok-dim);color:var(--ok)}.p-busy{background:var(--warn-dim);color:var(--warn)}
+
+/* ── layout ── */
+.body{flex:1;display:grid;grid-template-columns:560px 1fr;gap:18px;padding:18px 22px;min-height:0}
+.col{display:flex;flex-direction:column;gap:18px;min-height:0}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.panel-h{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14.5px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.panel-b{padding:16px;overflow:auto;flex:1;min-height:0}
+
+/* ── wizard ── */
+.step{display:flex;align-items:center;gap:9px;margin:20px 0 8px;font-weight:700;font-size:13.5px}
 .step:first-child{margin-top:0}
+.step i{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;font-size:12px;align-items:center;justify-content:center;font-weight:700}
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.card{border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;background:var(--surface2)}
-.card:hover{border-color:var(--border2)}.card.sel{border-color:var(--purple-light);background:var(--purple-dim)}
-.card b{display:block;font-size:13.5px;margin-bottom:3px}.card span{font-size:11.5px;color:var(--text-muted);line-height:1.35;display:block}
-.hint{font-size:12px;color:var(--text-muted);background:var(--surface3);border-radius:6px;padding:7px 10px;margin-top:6px;line-height:1.4}
-details.adv{margin-top:14px;border:1px solid var(--border);border-radius:8px;padding:8px 12px}
-details.adv summary{cursor:pointer;color:var(--text-muted);font-size:13px}
-.optgroup{border-left:2px solid var(--border2);margin:4px 0 8px 8px;padding-left:12px}
-.preview{margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--surface3);font-size:13px}
-.preview b{font-size:16px}
-.preview ul{margin:6px 0 0 16px;font-family:var(--mono);font-size:11.5px;color:var(--text-muted)}
-.actions{display:flex;gap:8px;margin-top:14px;align-items:center}
-.empty{color:var(--text-muted);font-size:13px;line-height:1.6;padding:8px}
+.card{border:1px solid var(--border);border-radius:9px;padding:11px 13px;cursor:pointer;background:var(--surface2);transition:border-color .12s,background .12s}
+.card:hover{border-color:var(--border2)}.card.sel{border-color:var(--accent);background:var(--accent-dim);box-shadow:inset 0 0 0 1px var(--accent)}
+.card b{display:block;font-size:13.5px;margin-bottom:3px}.card span{font-size:11.5px;color:var(--text-2);line-height:1.4;display:block}
+label.f{display:block;font-size:12.5px;color:var(--text-2);margin:12px 0 5px;font-weight:600}
+label.f small{font-weight:400;color:var(--text-3);margin-left:6px}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:7px;padding:8px 10px;font-size:13.5px;font-family:inherit;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+input:disabled{opacity:.5}
+textarea{font-family:var(--mono);font-size:12.5px;min-height:76px;resize:vertical;line-height:1.5}
+.resolved{margin-top:6px;border-radius:7px;background:var(--surface3);padding:8px 10px;font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--text-2)}
+.resolved .ok::before{content:"→ ";color:var(--ok)}
+.resolved .bad{color:var(--bad)}.resolved .bad::before{content:"✕ "}
+.resolved .lbl{font-family:inherit;color:var(--text-3);font-size:11px;margin-bottom:2px}
+.note{font-size:12px;color:var(--text-2);background:var(--info-dim);border-left:3px solid var(--info);border-radius:0 7px 7px 0;padding:7px 10px;margin-top:8px;line-height:1.45}
+.note.warn{background:var(--warn-dim);border-color:var(--warn)}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:7px 0;color:var(--text);cursor:pointer}
+.chk input{width:15px;height:15px;accent-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+details.adv{margin-top:16px;border:1px solid var(--border);border-radius:9px;padding:10px 14px;background:var(--surface2)}
+details.adv summary{cursor:pointer;color:var(--text-2);font-size:13px;font-weight:600;list-style:none;display:flex;justify-content:space-between}
+details.adv summary::after{content:"펼치기 ▾";font-weight:400;color:var(--text-3)}
+details.adv[open] summary::after{content:"접기 ▴"}
+.optgroup{border-left:2px solid var(--border2);margin:2px 0 10px 8px;padding-left:12px}
+.tag{font-family:var(--mono);color:var(--text-3);font-size:11px;margin-left:6px}
+.btn{background:var(--accent-strong);color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:filter .12s}
+.btn:hover{filter:brightness(1.1)}.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn.sm{padding:5px 11px;font-size:12.5px;font-weight:500}
+.actions{display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap}
+.preview{margin-top:10px;padding:12px 14px;border-radius:9px;background:var(--surface3);font-size:13px;border:1px solid var(--border)}
+.preview .nums{display:flex;gap:16px;margin-bottom:6px}
+.preview .nums b{font-size:20px;margin-right:5px}
+.preview ul{margin:6px 0 0 16px;font-family:var(--mono);font-size:11.5px;color:var(--text-2);max-height:140px;overflow:auto}
+.err{color:var(--bad);font-size:12.5px;white-space:pre-wrap;font-family:var(--mono);background:var(--bad-dim);border-radius:7px;padding:8px 10px;margin-top:8px}
+
+/* ── jobs table ── */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--text-3);font-weight:600;font-size:11.5px;letter-spacing:.02em;position:sticky;top:0;background:var(--surface)}
+tr.j{cursor:pointer}tr.j:hover td{background:rgba(255,255,255,.025)}tr.j.sel td{background:var(--accent-dim)}
+td.mono{font-family:var(--mono);font-size:11.5px;word-break:break-all;color:var(--text-2)}
+.badge{padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap;display:inline-block}
+.b-queued{background:var(--info-dim);color:var(--info)}.b-running{background:var(--warn-dim);color:var(--warn)}
+.b-done{background:var(--ok-dim);color:var(--ok)}.b-failed,.b-error{background:var(--bad-dim);color:var(--bad)}
+.b-cancelled,.b-interrupted,.b-cancelling{background:rgba(255,255,255,.07);color:var(--text-2)}
+.bar{height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;min-width:90px}
+.bar>i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.empty{color:var(--text-2);font-size:13px;line-height:1.7;padding:14px}
+
+/* ── detail ── */
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.stat{background:var(--surface3);border-radius:8px;padding:8px 12px;font-size:12.5px;min-width:78px}
+.stat b{display:block;font-size:18px;line-height:1.1;margin-bottom:2px}
+.stat.ok b{color:var(--ok)}.stat.bad b{color:var(--bad)}
+.kv{font-size:12.5px;color:var(--text-2);line-height:1.7}.kv code{font-family:var(--mono);color:var(--text);font-size:11.5px}
+.fail-box{border:1px solid rgba(248,113,113,.35);background:var(--bad-dim);border-radius:9px;padding:10px 12px;margin:10px 0}
+.fail-box h4{font-size:13px;color:var(--bad);margin-bottom:6px}
+.fail-box .kinds{display:flex;gap:8px;flex-wrap:wrap;font-size:12px}
+.fail-box .kinds span{background:rgba(0,0,0,.25);border-radius:6px;padding:3px 8px}
+details.item{margin:4px 0}details.item summary{cursor:pointer;font-size:12px;list-style:none;display:flex;gap:8px;align-items:baseline}
+details.item summary .src{font-family:var(--mono);font-size:11.5px;color:var(--text)}
+details.item summary .why{color:var(--bad)}
+details.item pre{margin:6px 0 4px 14px;background:rgba(0,0,0,.3);border-radius:6px;padding:8px 10px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;color:var(--text-2);font-family:var(--mono)}
+.filter{display:flex;gap:6px;margin:8px 0}
+.filter button{background:transparent;border:1px solid var(--border2);color:var(--text-2);border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer}
+.filter button.on{background:var(--accent-dim);color:var(--text);border-color:var(--accent)}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useEffect,useCallback,useRef} = React;
+const {useState,useEffect,useCallback,useMemo} = React;
 const api = async (path, opt) => {
   const r = await fetch(path, opt);
   const j = await r.json().catch(()=>({}));
-  if (!r.ok) throw new Error(j.detail || r.statusText);
+  if (!r.ok) throw new Error(typeof j.detail === 'string' ? j.detail : (j.detail ? JSON.stringify(j.detail) : r.statusText));
   return j;
 };
-const STATUS_KO = {queued:'대기', running:'실행 중', done:'완료', failed:'실패 있음', error:'오류', cancelled:'취소', cancelling:'취소 중', interrupted:'중단'};
+const post = (path, body) => api(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+const STATUS_KO = {queued:'대기', running:'실행 중', done:'완료', failed:'실패 있음', error:'오류', cancelled:'취소', cancelling:'취소 중', interrupted:'중단됨'};
+const FAIL_KO = {output_missing:'산출물 미생성', nonzero_exit:'비정상 종료', network:'네트워크/스토리지 오류', timeout:'타임아웃', launch_error:'실행 불가'};
+const ITEM_KO = {converted:'변환', skipped:'스킵', failed:'실패', planned:'계획', cancelled:'취소'};
+const fmtTime = (s) => s ? s.replace('T',' ').slice(0,19) : '';
+
+/* Windows(UNC) 경로 → 서버(Linux) 경로. 서버 PathMapper와 동일 규칙의 클라이언트 미리보기 */
+function toServerPath(raw, mounts) {
+  const t = (raw||'').trim();
+  if (!t) return null;
+  const norm = (p) => p.replace(/\\/g,'/').replace(/\/+$/,'');
+  const n = norm(t);
+  if (n.startsWith('//')) {
+    for (const m of mounts) {
+      const root = norm(m.windows);
+      if (n.toLowerCase() === root.toLowerCase()) return {ok:true, path:m.linux};
+      if (n.toLowerCase().startsWith(root.toLowerCase()+'/')) return {ok:true, path:m.linux + n.slice(root.length)};
+    }
+    return {ok:false, path:t, why:'등록된 Qumulo 마운트 밖의 UNC 경로'};
+  }
+  for (const m of mounts) if (n === m.linux || n.startsWith(m.linux+'/')) return {ok:true, path:n};
+  if (/^[a-zA-Z]:\//.test(n)) return {ok:false, path:t, why:'드라이브 문자 경로는 지원하지 않음 — UNC(\\\\qumulo...) 또는 /mnt 경로 사용'};
+  return {ok:false, path:t, why:'서버 마운트 밖의 경로'};
+}
 
 function OptionField({spec, value, onChange}) {
   const v = value === undefined ? spec.default : value;
-  const tag = <span style={{fontFamily:'var(--mono)',color:'var(--text-dim)',fontSize:11}}>{spec.name}</span>;
+  const tag = <span className="tag">{spec.name}</span>;
   if (spec.kind === 'flag') return (
-    <label className="chk"><input type="checkbox" checked={!!v} onChange={e=>onChange(e.target.checked)} />
-      <span>{spec.help || spec.name} {tag}</span></label>);
-  if (spec.kind === 'choice') return (<div><label>{spec.help || spec.name} {tag}</label>
+    <label className="chk"><input type="checkbox" checked={!!v} onChange={e=>onChange(e.target.checked)} /><span>{spec.help || spec.name}{tag}</span></label>);
+  if (spec.kind === 'choice') return (<div><label className="f">{spec.help || spec.name}{tag}</label>
     <select value={v ?? ''} onChange={e=>onChange(e.target.value)}>{spec.choices.map(c=><option key={c} value={c}>{c}</option>)}</select></div>);
-  return (<div><label>{spec.help || spec.name} {tag}</label>
+  return (<div><label className="f">{spec.help || spec.name}{tag}</label>
     <input type={spec.kind==='int'?'number':'text'} value={v ?? ''} placeholder={spec.default ?? ''}
       onChange={e=>onChange(spec.kind==='int' ? (e.target.value===''?null:Number(e.target.value)) : e.target.value)} /></div>);
 }
 
-/* 어댑터 옵션을 group 단위로 렌더: group의 flag가 켜졌을 때만 부속 옵션 노출 */
 function AdvancedOptions({adapter, opts, setOpt}) {
   if (!adapter) return null;
   const ungrouped = adapter.options.filter(o=>!o.group);
@@ -129,144 +182,209 @@ function AdvancedOptions({adapter, opts, setOpt}) {
   </div>);
 }
 
+function PathResolved({lines, mounts, label}) {
+  const items = lines.map(l=>({raw:l, r:toServerPath(l, mounts)})).filter(x=>x.r);
+  if (!items.length) return null;
+  return (<div className="resolved">
+    <div className="lbl">{label}</div>
+    {items.map((x,i)=><div key={i} className={x.r.ok?'ok':'bad'}>{x.r.path}{!x.r.ok && <span> — {x.r.why}</span>}</div>)}
+  </div>);
+}
+
 function SubmitPanel({adapters, presets, meta, onSubmitted}) {
+  const mounts = meta.mounts || [];
   const [presetId, setPresetId] = useState('dvl2asc');
   const [inputs, setInputs] = useState('');
   const [outputDir, setOutputDir] = useState('');
   const [opts, setOpts] = useState({});
   const [flags, setFlags] = useState({force:false, workers:'', retries:''});
   const [busy, setBusy] = useState(''); const [err, setErr] = useState('');
-  const [browsePath, setBrowsePath] = useState(''); const [listing, setListing] = useState(null);
   const [preview, setPreview] = useState(null);
   const preset = presets.find(p=>p.id===presetId) || presets[0];
   const adapter = preset && adapters.find(a=>a.name===preset.adapter);
+  const nextToSource = !!(adapter && adapter.output_next_to_source);
   useEffect(()=>{ if (preset) { setOpts({...preset.options}); setPreview(null); } }, [presetId, presets.length]);
   useEffect(()=>{ setPreview(null); }, [inputs, outputDir, flags.force]);
   const setOpt = (k,v)=>{ setOpts(o=>({...o,[k]:v})); setPreview(null); };
-  const browse = async (p) => { try { const j = await api('/api/browse?path='+encodeURIComponent(p)); setListing(j); setBrowsePath(j.path); setErr(''); } catch(e){ setErr(e.message); } };
-  const body = () => ({adapter: preset.adapter, inputs: inputs.split(/\r?\n/).map(s=>s.trim()).filter(Boolean), options: opts,
-        output_dir: outputDir||null, force: flags.force, dry_run: false,
+  const inputLines = inputs.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const inputBad = inputLines.some(l=>!(toServerPath(l,mounts)||{}).ok);
+  const outRes = outputDir.trim() ? toServerPath(outputDir, mounts) : null;
+  const body = () => ({adapter: preset.adapter, inputs: inputLines, options: opts,
+        output_dir: (nextToSource || !outputDir.trim()) ? null : outputDir.trim(), force: flags.force, dry_run: false,
         workers: flags.workers===''?null:Number(flags.workers), retries: flags.retries===''?null:Number(flags.retries)});
-  const post = (path) => api(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body())});
-  const doPreview = async () => {
-    setBusy('preview'); setErr('');
-    try { setPreview(await post('/api/preview')); } catch(e){ setErr(e.message); } finally { setBusy(''); }
-  };
-  const submit = async () => {
-    setBusy('submit'); setErr('');
-    try { const j = await post('/api/jobs'); onSubmitted(j.id); setPreview(null); } catch(e){ setErr(e.message); } finally { setBusy(''); }
-  };
-  const canPreview = !!inputs.trim() && !busy;
-  const placeholder = 'Windows 탐색기 주소를 그대로 붙여 넣으세요 (한 줄에 하나)\n\\\\qumulo.stradvision.com\\datagroup\\datateam3\\Repository\\01_raw_data\\...\n또는 /mnt/qumulo/datateam3/...';
+  const doPreview = async () => { setBusy('preview'); setErr(''); try { setPreview(await post('/api/preview', body())); } catch(e){ setErr(e.message); } finally { setBusy(''); } };
+  const submit = async () => { setBusy('submit'); setErr(''); try { const j = await post('/api/jobs', body()); onSubmitted(j.id); setPreview(null); } catch(e){ setErr(e.message); } finally { setBusy(''); } };
+  const canPreview = inputLines.length>0 && !inputBad && !busy && (!outRes || outRes.ok);
+  const placeholder = 'Windows 탐색기 주소창을 그대로 붙여 넣으세요 (여러 개면 한 줄에 하나)\n\\\\qumulo.stradvision.com\\datagroup\\datateam3\\Repository\\01_raw_data\\...\n/mnt/qumulo/datateam3/Repository/... 형식도 됩니다';
   return (<div className="panel">
-    <div className="panel-h">변환 잡 제출</div>
+    <div className="panel-h">새 변환</div>
     <div className="panel-b">
-      <div className="step">1. 무엇을 변환할까요?</div>
+      <div className="step"><i>1</i>무엇을 변환할까요?</div>
       <div className="cards">
         {presets.map(p=><div key={p.id} className={'card'+(p.id===presetId?' sel':'')} onClick={()=>setPresetId(p.id)}><b>{p.title}</b><span>{p.desc}</span></div>)}
       </div>
 
-      <div className="step">2. 입력 경로</div>
-      <textarea value={inputs} onChange={e=>setInputs(e.target.value)} placeholder={placeholder} />
-      {preset && <div className="hint">📌 {preset.input_hint}</div>}
-      <div className="row" style={{marginTop:6}}>
-        <input type="text" value={browsePath} onChange={e=>setBrowsePath(e.target.value)} placeholder="서버에서 폴더 찾아보기 (선택)" />
-        <button className="btn ghost" style={{flex:'0 0 auto'}} onClick={()=>browse(browsePath || (meta.mounts?.[0]||''))}>탐색</button>
-      </div>
-      {listing && <div className="browse">
-        <div onClick={()=>browse(listing.path.replace(/\/[^/]+$/,'')||'/')}>.. </div>
-        {listing.dirs.map(d=><div key={d} onClick={()=>browse(listing.path+'/'+d)}>📁 {d}</div>)}
-        {listing.files.slice(0,50).map(f=><div key={f} style={{color:'var(--text-dim)'}}>· {f}</div>)}
-        <div style={{marginTop:6}}><button className="btn ghost" onClick={()=>setInputs(v=>(v?v+'\n':'')+listing.path)}>이 폴더를 입력에 추가</button></div>
-      </div>}
+      <div className="step"><i>2</i>어디에 있는 파일을?</div>
+      <label className="f">입력 경로 <small>폴더면 하위 전체를 스캔합니다</small></label>
+      <textarea value={inputs} onChange={e=>setInputs(e.target.value)} placeholder={placeholder} spellCheck={false} />
+      <PathResolved lines={inputLines} mounts={mounts} label="서버에서 이렇게 해석됩니다" />
+      {preset && <div className="note">📌 {preset.input_hint}</div>}
+
+      <div className="step"><i>3</i>결과를 어디에?</div>
+      <label className="f">출력 폴더 <small>선택</small></label>
+      <input type="text" value={outputDir} onChange={e=>setOutputDir(e.target.value)} disabled={nextToSource}
+        placeholder={nextToSource ? '이 변환기는 출력 위치를 지정할 수 없습니다' : '비우면 아래 안내대로 입력 파일 옆에 생성'} spellCheck={false} />
+      {outRes && <PathResolved lines={[outputDir]} mounts={mounts} label="서버에서 이렇게 해석됩니다" />}
+      {nextToSource
+        ? <div className="note warn">이 변환기는 산출물을 <b>항상 입력 파일과 같은 폴더</b>에 만듭니다 (도구에 출력 위치 옵션이 없음).</div>
+        : (!outputDir.trim()
+            ? <div className="note">출력 폴더를 비워 두면 <b>각 입력 파일과 같은 폴더</b>에 변환 결과가 생성됩니다 (권장 — 원본과 나란히 보관).</div>
+            : <div className="note">모든 결과가 위 출력 폴더 한 곳에 생성됩니다. 하위 폴더 구조는 유지되지 않으니 이름이 겹치는 파일이 있으면 비워 두세요.</div>)}
 
       <details className="adv">
-        <summary>고급 설정 — 출력 위치 · 어댑터 옵션 · 병렬/재시도 {adapter && <span style={{color:'var(--text-dim)'}}>({adapter.name})</span>}</summary>
-        <label>출력 디렉터리 (비우면 원본 옆 — 권장)</label>
-        <input type="text" value={outputDir} onChange={e=>setOutputDir(e.target.value)} />
-        <div style={{marginTop:10}}><AdvancedOptions adapter={adapter} opts={opts} setOpt={setOpt} /></div>
-        <div className="row" style={{marginTop:12}}>
-          <div><label>동시 처리 수 (workers)</label><input type="number" value={flags.workers} onChange={e=>setFlags(f=>({...f,workers:e.target.value}))} placeholder="설정 기본" /></div>
-          <div><label>재시도 횟수 (retries)</label><input type="number" value={flags.retries} onChange={e=>setFlags(f=>({...f,retries:e.target.value}))} placeholder="설정 기본" /></div>
+        <summary>고급 설정 — 변환 옵션 · 동시 처리 · 재시도 · 강제 재변환{adapter && <span className="tag">{adapter.name}</span>}</summary>
+        <div style={{marginTop:6}}><AdvancedOptions adapter={adapter} opts={opts} setOpt={setOpt} /></div>
+        <div className="row" style={{marginTop:6}}>
+          <div><label className="f">동시 처리 수<small>workers · 기본 4</small></label><input type="number" value={flags.workers} onChange={e=>setFlags(f=>({...f,workers:e.target.value}))} placeholder="4" /></div>
+          <div><label className="f">실패 시 재시도<small>retries · 기본 2</small></label><input type="number" value={flags.retries} onChange={e=>setFlags(f=>({...f,retries:e.target.value}))} placeholder="2" /></div>
         </div>
-        <label className="chk"><input type="checkbox" checked={flags.force} onChange={e=>setFlags(f=>({...f,force:e.target.checked}))} /> 이미 변환된 것도 다시 변환 (force)</label>
+        <label className="chk"><input type="checkbox" checked={flags.force} onChange={e=>setFlags(f=>({...f,force:e.target.checked}))} /> 이미 변환된 파일도 다시 변환 (force)</label>
       </details>
 
-      <div className="step">3. 확인 후 실행</div>
+      <div className="step"><i>4</i>확인하고 시작</div>
       {err && <div className="err">{err}</div>}
       {preview && <div className="preview">
-        대상 <b>{preview.total}</b>건 중 변환 예정 <b style={{color:'var(--green)'}}>{preview.todo}</b>건, 이미 완료되어 건너뜀 <b>{preview.skipped}</b>건
-        {preview.todo===0 && <div className="muted" style={{marginTop:4}}>변환할 파일이 없습니다. 경로·입력 포맷을 확인하거나 force를 켜세요.</div>}
+        <div className="nums">
+          <div><b>{preview.total}</b>대상</div>
+          <div style={{color:'var(--ok)'}}><b>{preview.todo}</b>변환 예정</div>
+          <div style={{color:'var(--text-2)'}}><b>{preview.skipped}</b>이미 완료(스킵)</div>
+        </div>
+        {preview.todo===0 && <div className="note warn">변환할 파일이 없습니다. 경로가 맞는지, 입력 포맷(고급 설정)이 맞는지 확인하거나 이미 전부 변환된 경우 force를 켜세요.</div>}
         {preview.sample_todo.length>0 && <ul>{preview.sample_todo.map(x=><li key={x}>{x}</li>)}{preview.todo>preview.sample_todo.length && <li>… 외 {preview.todo-preview.sample_todo.length}건</li>}</ul>}
       </div>}
       <div className="actions">
-        <button className="btn ghost" style={{padding:'9px 14px',fontSize:14}} disabled={!canPreview} onClick={doPreview}>{busy==='preview'?'스캔 중…':'미리보기 (실행 안 함)'}</button>
+        <button className="btn ghost" disabled={!canPreview} onClick={doPreview}>{busy==='preview'?'스캔 중…':'미리보기'}</button>
         <button className="btn" disabled={!preview || preview.todo===0 || !!busy} onClick={submit}>{busy==='submit'?'제출 중…':`변환 시작${preview?` (${preview.todo}건)`:''}`}</button>
-        {!preview && <span className="muted">먼저 미리보기로 범위를 확인하세요.</span>}
+        <span style={{fontSize:12.5,color:'var(--text-3)'}}>{preview ? '건수를 확인했으면 시작하세요.' : '미리보기는 실행 없이 대상만 셉니다.'}</span>
       </div>
     </div>
   </div>);
 }
 
+function JobsTable({jobs, sel, onSel, onRefresh}) {
+  return (<div className="panel" style={{flex:'0 0 auto',maxHeight:'44%'}}>
+    <div className="panel-h">잡 큐 · 이력 <button className="btn ghost sm" onClick={onRefresh}>새로고침</button></div>
+    <div className="panel-b" style={{padding:0}}>
+      {jobs.length===0 ? <div className="empty">아직 잡이 없습니다. 왼쪽에서 작업을 고르고 경로를 붙여 넣은 뒤 <b>미리보기 → 변환 시작</b>.<br/>완료된 파일은 자동으로 건너뛰므로 중단돼도 같은 경로를 다시 제출하면 이어서 처리됩니다.</div>
+      : <table><thead><tr><th>상태</th><th>작업</th><th>입력</th><th>진행</th><th>결과</th><th>제출</th></tr></thead><tbody>
+        {jobs.map(j=>{
+          const s = j.summary_counts || {};
+          return (<tr key={j.id} className={'j'+(sel===j.id?' sel':'')} onClick={()=>onSel(j.id)}>
+            <td><span className={'badge b-'+j.status}>{STATUS_KO[j.status]||j.status}</span></td>
+            <td>{j.adapter}</td>
+            <td className="mono">{j.inputs[0]}{j.inputs.length>1?` 외 ${j.inputs.length-1}`:''}</td>
+            <td>{j.status==='running' ? <div><div className="bar"><i style={{width:(j.progress_total?100*j.progress_done/j.progress_total:0)+'%'}} /></div><div style={{fontSize:11,color:'var(--text-3)'}}>{j.progress_done}/{j.progress_total}</div></div> : (j.progress_total ? `${j.progress_done}/${j.progress_total}` : '')}</td>
+            <td style={{whiteSpace:'nowrap',fontSize:12}}>{j.status==='done'||j.status==='failed' ? <span>{j.progress_total ? '' : ''}<span style={{color:'var(--ok)'}}>변환 {s.converted??'-'}</span> · 스킵 {s.skipped??'-'} · <span style={{color:(s.failed>0)?'var(--bad)':'inherit'}}>실패 {s.failed??'-'}</span></span> : (j.error ? <span style={{color:'var(--bad)'}}>오류</span> : '')}</td>
+            <td style={{whiteSpace:'nowrap',color:'var(--text-3)',fontSize:12}}>{fmtTime(j.created_at)}</td>
+          </tr>);
+        })}
+      </tbody></table>}
+    </div>
+  </div>);
+}
+
 function JobDetail({job, onCancel}) {
-  if (!job) return <div className="muted">잡을 선택하세요.</div>;
+  const [filter, setFilter] = useState('failed');
+  useEffect(()=>{ setFilter(job && job.summary && job.summary.failed>0 ? 'failed' : 'all'); }, [job && job.id, job && job.status]);
+  if (!job) return (<div className="panel"><div className="panel-h">잡 상세</div><div className="empty">위 목록에서 잡을 클릭하면 진행률, 변환/스킵/실패 목록, <b>실패 사유</b>, 실행된 명령, 로그 파일 위치가 여기 표시됩니다.</div></div>);
   const s = job.summary;
-  return (<div>
-    <div className="job-t"><b>{job.adapter}</b> <span className={'badge b-'+job.status}>{STATUS_KO[job.status]||job.status}</span></div>
-    <div className="job-p" style={{whiteSpace:'normal'}}>{job.inputs.join(' · ')}</div>
-    <div className="muted" style={{marginTop:4}}>생성 {job.created_at} {job.started_at && ' · 시작 '+job.started_at} {job.finished_at && ' · 종료 '+job.finished_at}</div>
-    {(job.status==='queued'||job.status==='running') && <div style={{marginTop:8}}><button className="btn ghost" onClick={()=>onCancel(job.id)}>취소</button></div>}
-    {job.error && <div className="err" style={{marginTop:8}}>{job.error}</div>}
-    {s && <div>
-      <div className="stats">
-        <span className="stat"><b>{s.total}</b>전체</span><span className="stat" style={{color:'var(--green)'}}><b>{s.converted}</b>변환</span>
-        <span className="stat"><b>{s.skipped}</b>스킵</span><span className="stat" style={{color:'var(--red)'}}><b>{s.failed}</b>실패</span>
-        {s.planned>0 && <span className="stat"><b>{s.planned}</b>계획</span>}{s.cancelled>0 && <span className="stat"><b>{s.cancelled}</b>취소</span>}
+  const results = (s && s.results) || [];
+  const failed = results.filter(r=>r.status==='failed');
+  const kinds = {}; failed.forEach(r=>{ const k = FAIL_KO[r.failure]||r.failure||'기타'; kinds[k]=(kinds[k]||0)+1; });
+  const shown = filter==='all' ? results : results.filter(r=>r.status===filter);
+  const dur = (job.started_at && job.finished_at) ? Math.round((new Date(job.finished_at)-new Date(job.started_at))/1000) : null;
+  return (<div className="panel">
+    <div className="panel-h"><span>잡 상세 <span className="tag">{job.id}</span></span><span className={'badge b-'+job.status}>{STATUS_KO[job.status]||job.status}</span></div>
+    <div className="panel-b">
+      <div className="kv">
+        <div>작업: <b>{job.adapter}</b>{job.flags && job.flags.force ? ' · force' : ''}</div>
+        <div>입력: {job.inputs.map((p,i)=><code key={i} style={{display:'block'}}>{p}</code>)}</div>
+        <div>출력: <code>{job.output_dir || '입력 파일과 같은 폴더'}</code></div>
+        <div>제출 {fmtTime(job.created_at)}{job.started_at && ` · 시작 ${fmtTime(job.started_at)}`}{job.finished_at && ` · 종료 ${fmtTime(job.finished_at)}`}{dur!==null && ` · 소요 ${dur}초`}</div>
+        {s && s.log_path && <div>로그: <code>{s.log_path}</code></div>}
       </div>
-      <div className="muted">로그: <span style={{fontFamily:'var(--mono)'}}>{s.log_path}</span></div>
-      <table style={{marginTop:8}}><thead><tr><th>상태</th><th>파일</th><th>시도</th><th>사유</th></tr></thead><tbody>
-        {s.results.map((r,i)=><tr key={i}><td><span className={'badge b-'+(r.status==='converted'?'done':r.status==='failed'?'failed':'queued')}>{r.status}</span></td>
-          <td className="mono">{r.source}</td><td>{r.attempts||''}</td><td className="err" style={{color:r.status==='failed'?'var(--red)':'var(--text-dim)'}}>{r.message}</td></tr>)}
-      </tbody></table>
-    </div>}
+      {(job.status==='queued'||job.status==='running') && <div style={{margin:'10px 0'}}>
+        {job.status==='running' && <div className="bar" style={{marginBottom:6}}><i style={{width:(job.progress_total?100*job.progress_done/job.progress_total:0)+'%'}} /></div>}
+        <span style={{fontSize:12.5,color:'var(--text-2)'}}>{job.progress_done}/{job.progress_total} 처리 · </span><button className="btn ghost sm" onClick={()=>onCancel(job.id)}>취소</button>
+      </div>}
+      {job.error && <div className="fail-box"><h4>잡이 실행되지 못했습니다</h4><pre style={{margin:0,background:'transparent',padding:0}}>{job.error}</pre></div>}
+      {job.status==='interrupted' && <div className="note warn">서버 재시작으로 중단된 잡입니다. 같은 경로를 다시 제출하면 완료된 파일은 건너뛰고 나머지만 처리합니다.</div>}
+      {s && <div>
+        <div className="stats">
+          <div className="stat"><b>{s.total}</b>대상</div>
+          <div className="stat ok"><b>{s.converted}</b>변환 성공</div>
+          <div className="stat"><b>{s.skipped}</b>이미 완료</div>
+          <div className={'stat'+(s.failed>0?' bad':'')}><b>{s.failed}</b>실패</div>
+          {s.cancelled>0 && <div className="stat"><b>{s.cancelled}</b>취소</div>}
+        </div>
+        {failed.length>0 && <div className="fail-box">
+          <h4>실패 {failed.length}건 — 원인별</h4>
+          <div className="kinds">{Object.entries(kinds).map(([k,n])=><span key={k}>{k} <b>{n}</b></span>)}</div>
+          <div style={{fontSize:12,color:'var(--text-2)',marginTop:8,lineHeight:1.5}}>
+            <b>산출물 미생성</b>: 도구는 끝났지만 결과 파일이 없음 → 아래 메시지 확인, 입력 파일 손상 여부 점검 ·
+            <b> 네트워크/스토리지</b>: Qumulo 접근 오류 → 같은 경로를 다시 제출(자동 스킵·이어하기) ·
+            <b> 타임아웃</b>: 파일당 제한 초과 → 고급 설정에서 시간 늘려 재제출 ·
+            <b> 실행 불가</b>: 선행 조건 미충족(예: DJLP는 .asc 필요) 또는 도구 경로 설정 문제
+          </div>
+        </div>}
+        <div className="filter">
+          {[['all','전체 '+results.length],['failed','실패 '+s.failed],['converted','변환 '+s.converted],['skipped','스킵 '+s.skipped]].map(([k,l])=>
+            <button key={k} className={filter===k?'on':''} onClick={()=>setFilter(k)}>{l}</button>)}
+        </div>
+        {shown.length===0 && <div className="empty">해당 항목이 없습니다.</div>}
+        {shown.map((r,i)=>(
+          <details key={i} className="item">
+            <summary>
+              <span className={'badge b-'+(r.status==='converted'?'done':r.status==='failed'?'failed':'queued')} style={{fontSize:10.5}}>{ITEM_KO[r.status]||r.status}</span>
+              <span className="src">{r.source}</span>
+              {r.status==='failed' && <span className="why">{FAIL_KO[r.failure]||r.failure} — {(r.message||'').split('\n')[0].replace(/^[^\n]*?\n?/,'') || (r.message||'').split('\n')[0]}</span>}
+              {r.attempts>1 && <span className="tag">{r.attempts}회 시도</span>}
+            </summary>
+            {r.message && <pre>{r.message}</pre>}
+            {r.argv && r.argv.length>0 && <pre>$ {r.argv.join(' ')}</pre>}
+          </details>))}
+      </div>}
+    </div>
   </div>);
 }
 
 function App() {
   const [adapters, setAdapters] = useState([]); const [presets, setPresets] = useState([]); const [meta, setMeta] = useState({});
   const [jobs, setJobs] = useState([]); const [sel, setSel] = useState(null); const [detail, setDetail] = useState(null);
-  const refresh = useCallback(async ()=>{ try{ setJobs(await api('/api/jobs?limit=60')); if (sel) setDetail(await api('/api/jobs/'+sel)); }catch(e){} }, [sel]);
+  const refresh = useCallback(async ()=>{
+    try {
+      const list = await api('/api/jobs?limit=80');
+      setJobs(list);
+      if (sel) setDetail(await api('/api/jobs/'+sel));
+    } catch(e){}
+  }, [sel]);
   useEffect(()=>{ api('/api/adapters').then(setAdapters); api('/api/presets').then(setPresets); api('/api/meta').then(setMeta); }, []);
   useEffect(()=>{ refresh(); const t=setInterval(refresh, 3000); return ()=>clearInterval(t); }, [refresh]);
   const cancel = async (id) => { await api('/api/jobs/'+id+'/cancel',{method:'POST'}); refresh(); };
-  const running = jobs.filter(j=>j.status==='running'||j.status==='queued').length;
+  const active = jobs.filter(j=>j.status==='running'||j.status==='queued').length;
   return (<>
-    <div className="sidebar">
-      <div className="logo"><b>misc_converter</b><small>v{meta.version||'…'} · 기타 포맷 변환</small></div>
-      <div className="nav-label">지원 변환</div>
-      {presets.map(p=><div key={p.id} className="nav"><span>{p.title}</span><small>{p.adapter}</small></div>)}
-      <div className="nav-label">마운트</div>
-      {(meta.mounts||[]).map(m=><div key={m} className="nav" style={{fontFamily:'var(--mono)',fontSize:12}}>{m}</div>)}
+    <div className="top">
+      <div className="brand"><b>misc_converter</b><small>v{meta.version||'…'} · 기타 인바운드 포맷 변환</small></div>
+      <div className="top-right">
+        <span>Qumulo: <code style={{fontFamily:'var(--mono)'}}>{(meta.mounts||[]).map(m=>m.linux).join(', ')}</code></span>
+        <span className={'pill '+(active?'p-busy':'p-idle')}>{active?`처리 중 ${active}건`:'대기 없음'}</span>
+      </div>
     </div>
-    <div className="main">
-      <div className="topbar"><h1>기타 인바운드 포맷 변환</h1><span className={'badge '+(running?'b-running':'b-done')}>{running?`큐 ${running}건`:'대기 없음'}</span></div>
-      <div className="content">
-        <SubmitPanel adapters={adapters} presets={presets} meta={meta} onSubmitted={id=>{setSel(id); refresh();}} />
-        <div className="panel">
-          <div className="panel-h">잡 큐 · 이력 <button className="btn ghost" onClick={refresh}>새로고침</button></div>
-          <div className="panel-b" style={{display:'grid',gridTemplateColumns:'260px 1fr',gap:14,minHeight:0}}>
-            <div style={{overflow:'auto'}}>
-              {jobs.length===0 && <div className="empty">아직 잡이 없습니다.<br/>왼쪽에서 작업을 고르고 경로를 붙여 넣은 뒤 <b>미리보기 → 변환 시작</b>.<br/>완료된 파일은 자동으로 건너뛰므로 중단돼도 그냥 다시 제출하면 됩니다.</div>}
-              {jobs.map(j=><div key={j.id} className={'job'+(sel===j.id?' sel':'')} onClick={()=>setSel(j.id)}>
-                <div className="job-t"><b>{j.adapter}</b><span className={'badge b-'+j.status}>{STATUS_KO[j.status]||j.status}</span></div>
-                <div className="job-p">{j.inputs[0]}{j.inputs.length>1?` 외 ${j.inputs.length-1}`:''}</div>
-                {(j.status==='running') && <div className="bar"><i style={{width:(j.progress_total?100*j.progress_done/j.progress_total:0)+'%'}} /></div>}
-                {(j.status==='running') && <div className="help">{j.progress_done}/{j.progress_total}</div>}
-              </div>)}
-            </div>
-            <div style={{overflow:'auto'}}>{detail ? <JobDetail job={detail} onCancel={cancel} /> : <div className="empty">잡을 클릭하면 진행률·변환/스킵/실패 목록·실패 사유·로그 위치가 여기 표시됩니다.</div>}</div>
-          </div>
-        </div>
+    <div className="body">
+      <div className="col"><SubmitPanel adapters={adapters} presets={presets} meta={meta} onSubmitted={id=>{setSel(id); refresh();}} /></div>
+      <div className="col">
+        <JobsTable jobs={jobs} sel={sel} onSel={setSel} onRefresh={refresh} />
+        <JobDetail job={detail} onCancel={cancel} />
       </div>
     </div>
   </>);

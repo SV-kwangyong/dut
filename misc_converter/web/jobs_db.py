@@ -96,8 +96,13 @@ def _row_to_dict(row: sqlite3.Row, with_summary: bool = True) -> dict[str, Any]:
     d["inputs"] = json.loads(d["inputs"])
     d["options"] = json.loads(d["options"])
     d["flags"] = json.loads(d["flags"])
+    summary = json.loads(d["summary"]) if d.get("summary") else None
     if with_summary:
-        d["summary"] = json.loads(d["summary"]) if d.get("summary") else None
+        d["summary"] = summary
     else:
+        # 목록은 가볍게 — 건수만
         d.pop("summary", None)
+        d["summary_counts"] = (
+            {k: summary.get(k) for k in ("total", "converted", "skipped", "failed", "cancelled")} if summary else None
+        )
     return d

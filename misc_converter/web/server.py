@@ -130,7 +130,7 @@ PRESETS: list[dict[str, Any]] = [
         "desc": "Aptiv DVL을 CANalyzer용 ASC 텍스트로 변환. csv 변환·영상(DJLP) 변환의 선행 단계.",
         "adapter": "aptiv",
         "options": {"input_format": "dvl", "asc": True},
-        "input_hint": "세션 폴더 또는 그 상위 폴더 (예: ...\raw\20251213). 하위의 .dvl 전부 대상, 이미 .asc가 있으면 스킵.",
+        "input_hint": "세션 폴더 또는 그 상위 폴더 (예: .../raw/20251213). 하위의 .dvl 전부 대상, 이미 .asc가 있으면 스킵.",
     },
     {
         "id": "avi2raw",
@@ -212,7 +212,11 @@ def create_app(cfg: Config | None = None, db_path: str | Path | None = None) -> 
 
     @app.get("/api/meta")
     def meta() -> dict[str, Any]:
-        return {"version": VERSION, "mounts": [str(r) for r in state.mapper.roots()], "log_dir": cfg.log_dir}
+        return {
+            "version": VERSION,
+            "mounts": [{"linux": m.linux, "windows": m.windows} for m in cfg.mounts.values()],
+            "log_dir": cfg.log_dir,
+        }
 
     @app.get("/api/adapters")
     def adapters() -> list[dict[str, Any]]:

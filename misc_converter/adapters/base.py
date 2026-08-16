@@ -43,6 +43,7 @@ class Adapter(ABC):
     unit: Literal["file", "session_parent"] = "file"
     tool_key: str = ""  # config.tools 의 키
     backend_kind: Literal["local", "wine", "docker"] = "local"
+    output_next_to_source: bool = False  # True면 도구가 출력 위치를 못 받아 산출물이 항상 원본 옆에 생긴다
     options: list[OptionSpec] = []
 
     # ── 스캔 ─────────────────────────────────────────────────────────
@@ -94,6 +95,7 @@ class Adapter(ABC):
             "description": self.description,
             "unit": self.unit,
             "backend": self.backend_kind,
+            "output_next_to_source": self.output_next_to_source,
             "options": [o.to_dict() for o in self.options],
         }
 

@@ -54,7 +54,7 @@ class AptivAdapter(Adapter):
     backend_kind = "wine"
     options = [
         OptionSpec(
-            "input", "choice", "dvl", (*INPUT_FORMATS.keys(), "any"), "입력 포맷 필터(트리 스캔 시 이 확장자만)"
+            "input_format", "choice", "dvl", (*INPUT_FORMATS.keys(), "any"), "입력 포맷 필터(트리 스캔 시 이 확장자만)"
         ),
         OptionSpec("asc", "flag", False, help="ASC 내보내기 (CAN 텍스트 트레이스, 주력 경로)"),
         OptionSpec("ascbase", "choice", "hex", ("hex", "dec"), "ASC 숫자 표기"),
@@ -89,7 +89,7 @@ class AptivAdapter(Adapter):
     def match(self, path: Path, opts: dict[str, Any]) -> bool:
         if not path.is_file():
             return False
-        fmt = str(opts.get("input") or "dvl")
+        fmt = str(opts.get("input_format") or "dvl")
         allowed = INPUT_EXTENSIONS if fmt == "any" else set(INPUT_FORMATS.get(fmt, ()))
         return path.suffix.lower() in allowed
 

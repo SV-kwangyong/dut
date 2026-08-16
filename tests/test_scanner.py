@@ -32,10 +32,10 @@ def test_scan_directory_matches_and_skips(tree):
 
 
 def test_scan_asc_input_excludes_self_conversion(tree):
-    opts = AptivAdapter().merge_options({"input": "asc", "asc": True})
+    opts = AptivAdapter().merge_options({"input_format": "asc", "asc": True})
     entries = scan([tree], AptivAdapter(), opts)
     assert entries == []  # done.asc → done.asc 자기 변환은 제외
-    opts = AptivAdapter().merge_options({"input": "asc", "dvl": True})
+    opts = AptivAdapter().merge_options({"input_format": "asc", "dvl": True})
     entries = scan([tree], AptivAdapter(), opts)
     assert [e.item.source.name for e in entries] == ["done.asc"]
 

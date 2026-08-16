@@ -21,7 +21,7 @@ def item(tmp_path):
 
 
 def test_match_input_extensions(tmp_path, adapter):
-    any_opts = adapter.merge_options({"input": "any"})
+    any_opts = adapter.merge_options({"input_format": "any"})
     for name in ["a.dvl", "b.DVL", "c.dvs", "d.dvsu", "e.mudp", "f.asc", "g.mf4"]:
         p = tmp_path / name
         p.write_bytes(b"x")
@@ -37,7 +37,7 @@ def test_match_default_input_filter_is_dvl(tmp_path, adapter):
     (tmp_path / "f.asc").write_bytes(b"x")
     assert adapter.match(tmp_path / "a.dvl", opts)
     assert not adapter.match(tmp_path / "f.asc", opts)
-    assert adapter.match(tmp_path / "f.asc", adapter.merge_options({"input": "asc"}))
+    assert adapter.match(tmp_path / "f.asc", adapter.merge_options({"input_format": "asc"}))
 
 
 def test_build_argv_asc_defaults(adapter, item):

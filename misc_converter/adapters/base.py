@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
@@ -41,7 +41,7 @@ class Adapter(ABC):
     unit: Literal["file", "session_parent"] = "file"
     tool_key: str = ""  # config.tools 의 키
     backend_kind: Literal["local", "wine", "docker"] = "local"
-    options: list[OptionSpec] = field(default_factory=list)  # type: ignore[assignment]
+    options: list[OptionSpec] = []
 
     # ── 스캔 ─────────────────────────────────────────────────────────
     @abstractmethod

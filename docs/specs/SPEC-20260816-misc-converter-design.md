@@ -2,7 +2,7 @@
 
 # SPEC — misc_converter: 기타 인바운드 포맷 변환 웹 서비스
 
-> 상태: 설계 승인 대기 | 작성: 2026-08-16 | 근거 대화: avi_convert 도구 통합 브레인스토밍
+> 상태: 승인·v1 구현 완료(2026-08-16, 실환경 검증 전) | 작성: 2026-08-16 | 근거 대화: avi_convert 도구 통합 브레인스토밍
 > 거버넌스: [`docs/CONSTITUTION.md`](../CONSTITUTION.md) → [`docs/RULE.md`](../RULE.md) 전면 적용 (dut 저장소에서 이식)
 
 ## 1. 배경과 문제
@@ -164,9 +164,10 @@ dut_test/
 
 ## 7. 열린 항목
 
-| # | 항목 | 해소 시점 |
-|---|---|---|
-| 1 | Wine에서 AptivFileConversion·DJLP 구동 성패 | 구현 1단계 스파이크 |
-| 2 | DJLPConvertTool CLI 옵션 표면 실측 | 스파이크와 동시 |
-| 3 | AptivFileConversion lcm·adtf 출력 확장자 실측 | 어댑터 구현 시 |
-| 4 | 우분투 서버 호스트 확정(IP·마운트 상태·docker 가용 여부) | 배포 전 |
+| # | 항목 | 해소 시점 | 코드에서의 흡수 방식 |
+|---|---|---|---|
+| 1 | Wine에서 AptivFileConversion·DJLP 구동 성패 | `docker/spike.sh` 실행(서버 필요) | 실패 시 해당 어댑터만 비활성 안내 |
+| 2 | DJLPConvertTool CLI 옵션 표면 실측 | 스파이크 4단계 출력 | `config.json` `djlp_argv_template` 수정만으로 반영 |
+| 3 | AptivFileConversion lcm·adtf 출력 확장자 실측 | 샘플 변환 1회 | `adapters/aptiv.py` `WRITERS` 값 갱신 (현재 `None` → stem.* glob 검증) |
+| 4 | 우분투 서버 호스트 확정(IP·마운트·docker) | 배포 전 | `config.json` |
+| 5 | Aptiv 입력 포맷 필터 기본값 `dvl` — 다른 포맷은 `--input-format` 지정 | 구현 중 결정 | 자기 변환(입력==산출물)은 스캔에서 제외 |

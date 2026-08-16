@@ -83,7 +83,19 @@ def _progress_printer(done: int, total: int, r: ItemResult) -> None:
     print(line, flush=True)
 
 
+def _force_utf8_stdio() -> None:
+    """Windows 콘솔(cp949)에서 한국어·특수문자 출력이 UnicodeEncodeError로 죽지 않도록."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                pass
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    _force_utf8_stdio()
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.command == "adapters":

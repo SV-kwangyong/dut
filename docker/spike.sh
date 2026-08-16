@@ -39,13 +39,24 @@ if timeout 120 script -qfec "xvfb-run -a wine $(winpath "$APTIV") --help" "$OUT/
   R[aptiv_help]=PASS; else R[aptiv_help]=FAIL; fi
 echo "${R[aptiv_help]}"
 
-step "3. AptivFileConversion dvl→asc 실변환"
+step "3. AptivFileConversion dvl→asc 실변환 (pty 필수 — 파이프면 Console.CursorLeft가 Invalid handle)"
 rm -f "$OUT/$(basename "${DVL%.*}").asc"
-timeout 900 xvfb-run -a wine "$(winpath "$APTIV")" -i "$(winpath "$DVL")" -o "$(winpath "$OUT")" -y --asc --ascbase=hex --asctimeref=absolute \
-  > "$OUT/aptiv_run.txt" 2>&1
+timeout 900 script -qfec "xvfb-run -a wine $(winpath "$APTIV") -i $(winpath "$DVL") -o $(winpath "$OUT") -y --asc --ascbase=hex --asctimeref=absolute" "$OUT/aptiv_run.txt" >/dev/null 2>&1
 ASC="$OUT/$(basename "${DVL%.*}").asc"
-if [ -s "$ASC" ]; then R[aptiv_convert]="PASS ($(stat -c%s "$ASC") bytes)"; echo "--- head:"; head -3 "$ASC"; else R[aptiv_convert]="FAIL (aptiv_run.txt 확인)"; fi
+if [ -s "$ASC" ] && [ "$(wc -l < "$ASC")" -gt 10 ]; then R[aptiv_convert]="PASS ($(stat -c%s "$ASC") bytes, $(wc -l < "$ASC") lines)"; echo "--- head:"; head -3 "$ASC"; else R[aptiv_convert]="FAIL (aptiv_run.txt 확인)"; tail -c 300 "$OUT/aptiv_run.txt"; fi
 echo "${R[aptiv_convert]}"
+
+step "3b. 엔진 경유 실변환 — misc_converter CLI(Wine 백엔드 pty 실행) 검증"
+ENGINE_OUT="$OUT/engine_out"; rm -rf "$ENGINE_OUT"; mkdir -p "$ENGINE_OUT"
+cat > "$OUT/spike_config.json" <<EOF
+{"tools": {"aptiv": "$APTIV", "djlp": "$DJLP"}, "wine": {"bin": "wine", "prefix": "$WINEPREFIX", "xvfb": true},
+ "mounts": {}, "workers": 1, "retries": 0, "timeout_s": 900, "log_dir": "$OUT/engine_logs"}
+EOF
+python3 -m misc_converter --config "$OUT/spike_config.json" aptiv -i "$DVL" -o "$ENGINE_OUT" --asc > "$OUT/engine_run.txt" 2>&1
+RC=$?
+EASC="$ENGINE_OUT/$(basename "${DVL%.*}").asc"
+if [ $RC -eq 0 ] && [ -s "$EASC" ] && [ "$(wc -l < "$EASC")" -gt 10 ]; then R[engine]="PASS (exit 0, $(wc -l < "$EASC") lines)"; else R[engine]="FAIL (exit $RC, engine_run.txt 확인)"; fi
+tail -4 "$OUT/engine_run.txt"; echo "${R[engine]}"
 
 step "4. DJLPConvertTool --help (Qt CLI 모드 기동)"
 if timeout 120 xvfb-run -a wine "$(winpath "$DJLP")" --help > "$OUT/djlp_help.txt" 2>&1; then R[djlp_help]="PASS"; else R[djlp_help]="FAIL/미지원 (djlp_help.txt 확인)"; fi

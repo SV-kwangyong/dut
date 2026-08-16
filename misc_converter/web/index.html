@@ -20,29 +20,34 @@
   --info:#60a5fa;--info-dim:rgba(96,165,250,.14);
   --r:10px;--mono:'Cascadia Code',Consolas,ui-monospace,monospace;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.45}
-#root{height:100%;display:flex;flex-direction:column}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.45}
+#root{min-height:100%;display:flex;flex-direction:column}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 button{font-family:inherit}
 a{color:var(--accent)}
 
 /* ── top bar ── */
-.top{height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--border);background:var(--surface)}
+.top{height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5}
 .brand{display:flex;align-items:baseline;gap:10px}
 .brand b{font-size:17px}.brand small{color:var(--text-3);font-family:var(--mono);font-size:11.5px}
 .top-right{display:flex;align-items:center;gap:14px;font-size:12.5px;color:var(--text-2)}
 .pill{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
 .p-idle{background:var(--ok-dim);color:var(--ok)}.p-busy{background:var(--warn-dim);color:var(--warn)}
 
-/* ── layout ── */
-.body{flex:1;display:grid;grid-template-columns:560px 1fr;gap:18px;padding:18px 22px;min-height:0}
-.col{display:flex;flex-direction:column;gap:18px;min-height:0}
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.panel-h{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14.5px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.panel-b{padding:16px;overflow:auto;flex:1;min-height:0}
+/* ── layout: 전체 폭 사용, 페이지 스크롤 ── */
+.body{flex:1;display:flex;flex-direction:column;gap:18px;padding:18px 22px;max-width:2200px;width:100%;margin:0 auto}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);display:flex;flex-direction:column}
+.panel-h{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14.5px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.panel-b{padding:16px}
+.wiz{display:grid;grid-template-columns:minmax(260px,320px) minmax(380px,1.1fr) minmax(380px,1fr)}
+.wiz>div{padding:16px 18px}
+.wiz>div+div{border-left:1px solid var(--border)}
+@media (max-width:1400px){.wiz{grid-template-columns:1fr 1fr}.wiz>div:first-child{grid-column:1/-1;border-bottom:1px solid var(--border)}.wiz>div:nth-child(2){border-left:0}}
+@media (max-width:900px){.wiz{grid-template-columns:1fr}.wiz>div{border-left:0!important;border-bottom:1px solid var(--border)}}
+.cards.v{grid-template-columns:1fr}
 
 /* ── wizard ── */
-.step{display:flex;align-items:center;gap:9px;margin:20px 0 8px;font-weight:700;font-size:13.5px}
+.step{display:flex;align-items:center;gap:9px;margin:18px 0 8px;font-weight:700;font-size:13.5px}
 .step:first-child{margin-top:0}
 .step i{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;font-size:12px;align-items:center;justify-content:center;font-weight:700}
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -85,7 +90,9 @@ details.adv[open] summary::after{content:"접기 ▴"}
 /* ── jobs table ── */
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top}
-th{color:var(--text-3);font-weight:600;font-size:11.5px;letter-spacing:.02em;position:sticky;top:0;background:var(--surface)}
+th{color:var(--text-3);font-weight:600;font-size:11.5px;letter-spacing:.02em;background:var(--surface)}
+tr.detail-row td{background:var(--surface2);padding:0;border-bottom:2px solid var(--accent)}
+.detail-wrap{padding:14px 18px 18px}
 tr.j{cursor:pointer}tr.j:hover td{background:rgba(255,255,255,.025)}tr.j.sel td{background:var(--accent-dim)}
 td.mono{font-family:var(--mono);font-size:11.5px;word-break:break-all;color:var(--text-2)}
 .badge{padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap;display:inline-block}
@@ -217,76 +224,87 @@ function SubmitPanel({adapters, presets, meta, onSubmitted}) {
   const canPreview = inputLines.length>0 && !inputBad && !busy && (!outRes || outRes.ok);
   const placeholder = 'Windows 탐색기 주소창을 그대로 붙여 넣으세요 (여러 개면 한 줄에 하나)\n\\\\qumulo.stradvision.com\\datagroup\\datateam3\\Repository\\01_raw_data\\...\n/mnt/qumulo/datateam3/Repository/... 형식도 됩니다';
   return (<div className="panel">
-    <div className="panel-h">새 변환</div>
-    <div className="panel-b">
-      <div className="step"><i>1</i>무엇을 변환할까요?</div>
-      <div className="cards">
-        {presets.map(p=><div key={p.id} className={'card'+(p.id===presetId?' sel':'')} onClick={()=>setPresetId(p.id)}><b>{p.title}</b><span>{p.desc}</span></div>)}
+    <div className="panel-h">새 변환 <span style={{fontWeight:400,fontSize:12.5,color:'var(--text-3)'}}>왼쪽에서 오른쪽으로 — 작업 → 경로 → 확인</span></div>
+    <div className="wiz">
+      <div>
+        <div className="step"><i>1</i>무엇을 변환할까요?</div>
+        <div className="cards v">
+          {presets.map(p=><div key={p.id} className={'card'+(p.id===presetId?' sel':'')} onClick={()=>setPresetId(p.id)}><b>{p.title}</b><span>{p.desc}</span></div>)}
+        </div>
       </div>
 
-      <div className="step"><i>2</i>어디에 있는 파일을?</div>
-      <label className="f">입력 경로 <small>폴더면 하위 전체를 스캔합니다</small></label>
-      <textarea value={inputs} onChange={e=>setInputs(e.target.value)} placeholder={placeholder} spellCheck={false} />
-      <PathResolved lines={inputLines} mounts={mounts} label="서버에서 이렇게 해석됩니다" />
-      {preset && <div className="note">📌 {preset.input_hint}</div>}
+      <div>
+        <div className="step"><i>2</i>어디에 있는 파일을?</div>
+        <label className="f">입력 경로 <small>폴더면 하위 전체를 스캔합니다 · 여러 개면 한 줄에 하나</small></label>
+        <textarea value={inputs} onChange={e=>setInputs(e.target.value)} placeholder={placeholder} spellCheck={false} style={{minHeight:96}} />
+        <PathResolved lines={inputLines} mounts={mounts} label="서버에서 이렇게 해석됩니다" />
+        {preset && <div className="note">📌 {preset.input_hint}</div>}
 
-      <div className="step"><i>3</i>결과를 어디에?</div>
-      <label className="f">출력 폴더 <small>선택</small></label>
-      <input type="text" value={outputDir} onChange={e=>setOutputDir(e.target.value)} disabled={nextToSource}
-        placeholder={nextToSource ? '이 변환기는 출력 위치를 지정할 수 없습니다' : '비우면 아래 안내대로 입력 파일 옆에 생성'} spellCheck={false} />
-      {outRes && <PathResolved lines={[outputDir]} mounts={mounts} label="서버에서 이렇게 해석됩니다" />}
-      {nextToSource
-        ? <div className="note warn">이 변환기는 산출물을 <b>항상 입력 파일과 같은 폴더</b>에 만듭니다 (도구에 출력 위치 옵션이 없음).</div>
-        : (!outputDir.trim()
-            ? <div className="note">출력 폴더를 비워 두면 <b>각 입력 파일과 같은 폴더</b>에 변환 결과가 생성됩니다 (권장 — 원본과 나란히 보관).</div>
-            : <div className="note">모든 결과가 위 출력 폴더 한 곳에 생성됩니다. 하위 폴더 구조는 유지되지 않으니 이름이 겹치는 파일이 있으면 비워 두세요.</div>)}
+        <div className="step"><i>3</i>결과를 어디에?</div>
+        <label className="f">출력 폴더 <small>선택</small></label>
+        <input type="text" value={outputDir} onChange={e=>setOutputDir(e.target.value)} disabled={nextToSource}
+          placeholder={nextToSource ? '이 변환기는 출력 위치를 지정할 수 없습니다' : '비우면 입력 파일 옆에 생성 (권장)'} spellCheck={false} />
+        {outRes && <PathResolved lines={[outputDir]} mounts={mounts} label="서버에서 이렇게 해석됩니다" />}
+        {nextToSource
+          ? <div className="note warn">이 변환기는 산출물을 <b>항상 입력 파일과 같은 폴더</b>에 만듭니다 (도구에 출력 위치 옵션이 없음).</div>
+          : (!outputDir.trim()
+              ? <div className="note">출력 폴더를 비워 두면 <b>각 입력 파일과 같은 폴더</b>에 변환 결과가 생성됩니다 (권장 — 원본과 나란히 보관).</div>
+              : <div className="note">모든 결과가 위 출력 폴더 한 곳에 생성됩니다. 하위 폴더 구조는 유지되지 않으니 이름이 겹치는 파일이 있으면 비워 두세요.</div>)}
+      </div>
 
-      <details className="adv">
-        <summary>고급 설정 — 변환 옵션 · 동시 처리 · 재시도 · 강제 재변환{adapter && <span className="tag">{adapter.name}</span>}</summary>
-        <div style={{marginTop:6}}><AdvancedOptions adapter={adapter} opts={opts} setOpt={setOpt} /></div>
-        <div className="row" style={{marginTop:6}}>
-          <div><label className="f">동시 처리 수<small>workers · 기본 4</small></label><input type="number" value={flags.workers} onChange={e=>setFlags(f=>({...f,workers:e.target.value}))} placeholder="4" /></div>
-          <div><label className="f">실패 시 재시도<small>retries · 기본 2</small></label><input type="number" value={flags.retries} onChange={e=>setFlags(f=>({...f,retries:e.target.value}))} placeholder="2" /></div>
+      <div>
+        <div className="step"><i>4</i>확인하고 시작</div>
+        <div className="actions" style={{marginTop:4}}>
+          <button className="btn ghost" disabled={!canPreview} onClick={doPreview}>{busy==='preview'?'스캔 중…':'미리보기'}</button>
+          <button className="btn" disabled={!preview || preview.todo===0 || !!busy} onClick={submit}>{busy==='submit'?'제출 중…':`변환 시작${preview?` (${preview.todo}건)`:''}`}</button>
         </div>
-        <label className="chk"><input type="checkbox" checked={flags.force} onChange={e=>setFlags(f=>({...f,force:e.target.checked}))} /> 이미 변환된 파일도 다시 변환 (force)</label>
-      </details>
+        <div style={{fontSize:12.5,color:'var(--text-3)',marginTop:8}}>{preview ? '건수를 확인했으면 시작하세요. 이미 변환된 파일은 자동으로 건너뜁니다.' : '미리보기는 실행 없이 대상 파일만 셉니다 — 먼저 눌러 범위를 확인하세요.'}</div>
+        {err && <div className="err">{err}</div>}
+        {preview && <div className="preview">
+          <div className="nums">
+            <div><b>{preview.total}</b>대상</div>
+            <div style={{color:'var(--ok)'}}><b>{preview.todo}</b>변환 예정</div>
+            <div style={{color:'var(--text-2)'}}><b>{preview.skipped}</b>이미 완료(스킵)</div>
+          </div>
+          {preview.todo===0 && <div className="note warn">변환할 파일이 없습니다. 경로가 맞는지, 입력 포맷(고급 설정)이 맞는지 확인하거나, 이미 전부 변환된 경우 force를 켜세요.</div>}
+          {preview.sample_todo.length>0 && <ul>{preview.sample_todo.map(x=><li key={x}>{x}</li>)}{preview.todo>preview.sample_todo.length && <li>… 외 {preview.todo-preview.sample_todo.length}건</li>}</ul>}
+        </div>}
 
-      <div className="step"><i>4</i>확인하고 시작</div>
-      {err && <div className="err">{err}</div>}
-      {preview && <div className="preview">
-        <div className="nums">
-          <div><b>{preview.total}</b>대상</div>
-          <div style={{color:'var(--ok)'}}><b>{preview.todo}</b>변환 예정</div>
-          <div style={{color:'var(--text-2)'}}><b>{preview.skipped}</b>이미 완료(스킵)</div>
-        </div>
-        {preview.todo===0 && <div className="note warn">변환할 파일이 없습니다. 경로가 맞는지, 입력 포맷(고급 설정)이 맞는지 확인하거나 이미 전부 변환된 경우 force를 켜세요.</div>}
-        {preview.sample_todo.length>0 && <ul>{preview.sample_todo.map(x=><li key={x}>{x}</li>)}{preview.todo>preview.sample_todo.length && <li>… 외 {preview.todo-preview.sample_todo.length}건</li>}</ul>}
-      </div>}
-      <div className="actions">
-        <button className="btn ghost" disabled={!canPreview} onClick={doPreview}>{busy==='preview'?'스캔 중…':'미리보기'}</button>
-        <button className="btn" disabled={!preview || preview.todo===0 || !!busy} onClick={submit}>{busy==='submit'?'제출 중…':`변환 시작${preview?` (${preview.todo}건)`:''}`}</button>
-        <span style={{fontSize:12.5,color:'var(--text-3)'}}>{preview ? '건수를 확인했으면 시작하세요.' : '미리보기는 실행 없이 대상만 셉니다.'}</span>
+        <details className="adv">
+          <summary>고급 설정 — 변환 옵션 · 동시 처리 · 재시도 · 강제 재변환{adapter && <span className="tag">{adapter.name}</span>}</summary>
+          <div style={{marginTop:6}}><AdvancedOptions adapter={adapter} opts={opts} setOpt={setOpt} /></div>
+          <div className="row" style={{marginTop:6}}>
+            <div><label className="f">동시 처리 수<small>workers · 기본 4</small></label><input type="number" value={flags.workers} onChange={e=>setFlags(f=>({...f,workers:e.target.value}))} placeholder="4" /></div>
+            <div><label className="f">실패 시 재시도<small>retries · 기본 2</small></label><input type="number" value={flags.retries} onChange={e=>setFlags(f=>({...f,retries:e.target.value}))} placeholder="2" /></div>
+          </div>
+          <label className="chk"><input type="checkbox" checked={flags.force} onChange={e=>setFlags(f=>({...f,force:e.target.checked}))} /> 이미 변환된 파일도 다시 변환 (force)</label>
+        </details>
       </div>
     </div>
   </div>);
 }
 
-function JobsTable({jobs, sel, onSel, onRefresh}) {
-  return (<div className="panel" style={{flex:'0 0 auto',maxHeight:'44%'}}>
-    <div className="panel-h">잡 큐 · 이력 <button className="btn ghost sm" onClick={onRefresh}>새로고침</button></div>
-    <div className="panel-b" style={{padding:0}}>
-      {jobs.length===0 ? <div className="empty">아직 잡이 없습니다. 왼쪽에서 작업을 고르고 경로를 붙여 넣은 뒤 <b>미리보기 → 변환 시작</b>.<br/>완료된 파일은 자동으로 건너뛰므로 중단돼도 같은 경로를 다시 제출하면 이어서 처리됩니다.</div>
-      : <table><thead><tr><th>상태</th><th>작업</th><th>입력</th><th>진행</th><th>결과</th><th>제출</th></tr></thead><tbody>
+function JobsTable({jobs, sel, onSel, onRefresh, detail, onCancel}) {
+  return (<div className="panel">
+    <div className="panel-h"><span>잡 큐 · 이력 <span style={{fontWeight:400,fontSize:12.5,color:'var(--text-3)',marginLeft:8}}>행을 클릭하면 상세가 아래에 펼쳐집니다</span></span><button className="btn ghost sm" onClick={onRefresh}>새로고침</button></div>
+    <div style={{overflowX:'auto'}}>
+      {jobs.length===0 ? <div className="empty">아직 잡이 없습니다. 위에서 작업을 고르고 경로를 붙여 넣은 뒤 <b>미리보기 → 변환 시작</b>.<br/>완료된 파일은 자동으로 건너뛰므로 중단돼도 같은 경로를 다시 제출하면 이어서 처리됩니다.</div>
+      : <table><thead><tr><th style={{width:90}}>상태</th><th style={{width:90}}>작업</th><th>입력</th><th style={{width:160}}>진행</th><th style={{width:220}}>결과</th><th style={{width:150}}>제출</th></tr></thead><tbody>
         {jobs.map(j=>{
           const s = j.summary_counts || {};
-          return (<tr key={j.id} className={'j'+(sel===j.id?' sel':'')} onClick={()=>onSel(j.id)}>
-            <td><span className={'badge b-'+j.status}>{STATUS_KO[j.status]||j.status}</span></td>
-            <td>{j.adapter}</td>
-            <td className="mono">{j.inputs[0]}{j.inputs.length>1?` 외 ${j.inputs.length-1}`:''}</td>
-            <td>{j.status==='running' ? <div><div className="bar"><i style={{width:(j.progress_total?100*j.progress_done/j.progress_total:0)+'%'}} /></div><div style={{fontSize:11,color:'var(--text-3)'}}>{j.progress_done}/{j.progress_total}</div></div> : (j.progress_total ? `${j.progress_done}/${j.progress_total}` : '')}</td>
-            <td style={{whiteSpace:'nowrap',fontSize:12}}>{j.status==='done'||j.status==='failed' ? <span>{j.progress_total ? '' : ''}<span style={{color:'var(--ok)'}}>변환 {s.converted??'-'}</span> · 스킵 {s.skipped??'-'} · <span style={{color:(s.failed>0)?'var(--bad)':'inherit'}}>실패 {s.failed??'-'}</span></span> : (j.error ? <span style={{color:'var(--bad)'}}>오류</span> : '')}</td>
-            <td style={{whiteSpace:'nowrap',color:'var(--text-3)',fontSize:12}}>{fmtTime(j.created_at)}</td>
-          </tr>);
+          const open = sel===j.id;
+          const finished = j.status==='done'||j.status==='failed'||j.status==='cancelled';
+          return (<React.Fragment key={j.id}>
+            <tr className={'j'+(open?' sel':'')} onClick={()=>onSel(open?null:j.id)}>
+              <td><span className={'badge b-'+j.status}>{STATUS_KO[j.status]||j.status}</span></td>
+              <td>{j.adapter}</td>
+              <td className="mono">{j.inputs[0]}{j.inputs.length>1?` 외 ${j.inputs.length-1}`:''}</td>
+              <td>{j.status==='running' ? <div><div className="bar"><i style={{width:(j.progress_total?100*j.progress_done/j.progress_total:0)+'%'}} /></div><div style={{fontSize:11,color:'var(--text-3)'}}>{j.progress_done}/{j.progress_total}</div></div> : (j.progress_total ? `${j.progress_done}/${j.progress_total}` : '')}</td>
+              <td style={{whiteSpace:'nowrap',fontSize:12}}>{finished && s.total!=null ? <span><span style={{color:'var(--ok)'}}>변환 {s.converted}</span> · 스킵 {s.skipped} · <span style={{color:(s.failed>0)?'var(--bad)':'inherit'}}>실패 {s.failed}</span></span> : (j.error ? <span style={{color:'var(--bad)'}}>오류 — 클릭해서 확인</span> : '')}</td>
+              <td style={{whiteSpace:'nowrap',color:'var(--text-3)',fontSize:12}}>{fmtTime(j.created_at)}</td>
+            </tr>
+            {open && <tr className="detail-row"><td colSpan={6}><div className="detail-wrap"><JobDetail job={detail} onCancel={onCancel} /></div></td></tr>}
+          </React.Fragment>);
         })}
       </tbody></table>}
     </div>
@@ -296,16 +314,15 @@ function JobsTable({jobs, sel, onSel, onRefresh}) {
 function JobDetail({job, onCancel}) {
   const [filter, setFilter] = useState('failed');
   useEffect(()=>{ setFilter(job && job.summary && job.summary.failed>0 ? 'failed' : 'all'); }, [job && job.id, job && job.status]);
-  if (!job) return (<div className="panel"><div className="panel-h">잡 상세</div><div className="empty">위 목록에서 잡을 클릭하면 진행률, 변환/스킵/실패 목록, <b>실패 사유</b>, 실행된 명령, 로그 파일 위치가 여기 표시됩니다.</div></div>);
+  if (!job) return <div className="empty">불러오는 중…</div>;
   const s = job.summary;
   const results = (s && s.results) || [];
   const failed = results.filter(r=>r.status==='failed');
   const kinds = {}; failed.forEach(r=>{ const k = FAIL_KO[r.failure]||r.failure||'기타'; kinds[k]=(kinds[k]||0)+1; });
   const shown = filter==='all' ? results : results.filter(r=>r.status===filter);
   const dur = (job.started_at && job.finished_at) ? Math.round((new Date(job.finished_at)-new Date(job.started_at))/1000) : null;
-  return (<div className="panel">
-    <div className="panel-h"><span>잡 상세 <span className="tag">{job.id}</span></span><span className={'badge b-'+job.status}>{STATUS_KO[job.status]||job.status}</span></div>
-    <div className="panel-b">
+  return (<div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}><b>잡 상세 <span className="tag">{job.id}</span></b><span className={'badge b-'+job.status}>{STATUS_KO[job.status]||job.status}</span></div>
       <div className="kv">
         <div>작업: <b>{job.adapter}</b>{job.flags && job.flags.force ? ' · force' : ''}</div>
         <div>입력: {job.inputs.map((p,i)=><code key={i} style={{display:'block'}}>{p}</code>)}</div>
@@ -354,7 +371,6 @@ function JobDetail({job, onCancel}) {
             {r.argv && r.argv.length>0 && <pre>$ {r.argv.join(' ')}</pre>}
           </details>))}
       </div>}
-    </div>
   </div>);
 }
 
@@ -365,7 +381,7 @@ function App() {
     try {
       const list = await api('/api/jobs?limit=80');
       setJobs(list);
-      if (sel) setDetail(await api('/api/jobs/'+sel));
+      if (sel) setDetail(await api('/api/jobs/'+sel)); else setDetail(null);
     } catch(e){}
   }, [sel]);
   useEffect(()=>{ api('/api/adapters').then(setAdapters); api('/api/presets').then(setPresets); api('/api/meta').then(setMeta); }, []);
@@ -381,11 +397,8 @@ function App() {
       </div>
     </div>
     <div className="body">
-      <div className="col"><SubmitPanel adapters={adapters} presets={presets} meta={meta} onSubmitted={id=>{setSel(id); refresh();}} /></div>
-      <div className="col">
-        <JobsTable jobs={jobs} sel={sel} onSel={setSel} onRefresh={refresh} />
-        <JobDetail job={detail} onCancel={cancel} />
-      </div>
+      <SubmitPanel adapters={adapters} presets={presets} meta={meta} onSubmitted={id=>{setSel(id); refresh();}} />
+      <JobsTable jobs={jobs} sel={sel} onSel={(id)=>{setSel(id); if(!id) setDetail(null);}} onRefresh={refresh} detail={detail} onCancel={cancel} />
     </div>
   </>);
 }
